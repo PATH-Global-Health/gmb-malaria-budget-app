@@ -134,11 +134,19 @@ window.GMB = window.GMB || {};
 
   function cleanState(data) {
     data = data || {};
+    var scenarios = Array.isArray(data.scenarios) ? data.scenarios : [];
+    var costSets = Array.isArray(data.costSets) ? data.costSets : [];
+    var budgets = Array.isArray(data.budgets) ? data.budgets : [];
+    var removedSeeds = Array.isArray(data.removedSeeds) ? data.removedSeeds : [];
+    if (scenarios.length === 1 && scenarios[0].id === "test-scenario" &&
+      !costSets.length && !budgets.length && !removedSeeds.length) {
+      scenarios = [];
+    }
     return {
-      scenarios: Array.isArray(data.scenarios) ? data.scenarios : [],
-      costSets: Array.isArray(data.costSets) ? data.costSets : [],
-      budgets: Array.isArray(data.budgets) ? data.budgets : [],
-      removedSeeds: Array.isArray(data.removedSeeds) ? data.removedSeeds : []
+      scenarios: scenarios,
+      costSets: costSets,
+      budgets: budgets,
+      removedSeeds: removedSeeds
     };
   }
 

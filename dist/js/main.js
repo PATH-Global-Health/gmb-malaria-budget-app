@@ -36,6 +36,38 @@
     }
   }
 
+  function renderSignInGate() {
+    var G = window.GMB;
+    var nav = document.getElementById("tab-nav");
+    var content = document.getElementById("tab-content");
+    var status = document.getElementById("data-status");
+    if (nav) nav.innerHTML = "";
+    if (status) {
+      status.textContent = "Sign in required for shared budgeting workspace";
+      status.className = "data-status warn";
+    }
+    if (!content) return;
+    content.className = "tab-content auth-gate-wrap";
+    content.innerHTML = "";
+
+    var card = document.createElement("section");
+    card.className = "auth-gate";
+    var title = document.createElement("h2");
+    title.textContent = "Sign in to access the budgeting workspace";
+    var body = document.createElement("p");
+    body.textContent = "The hosted Gambia budgeting app uses PATH-managed sign-in so scenarios, cost sets, and generated budgets can be shared across authorised users.";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn";
+    btn.textContent = "Sign in";
+    btn.addEventListener("click", function () { G.cloud.signIn(); });
+    card.appendChild(title);
+    card.appendChild(body);
+    card.appendChild(btn);
+    content.appendChild(card);
+    renderCloudStatus();
+  }
+
   function start(saved) {
     var G = window.GMB;
 
@@ -71,6 +103,10 @@
       G.cloud.onStatusChange = renderCloudStatus;
       await G.cloud.init();
       renderCloudStatus();
+      if (G.cloud.config && G.cloud.config.enabled && !(await G.cloud.isSignedIn())) {
+        renderSignInGate();
+        return;
+      }
     }
     var loaded = G.persistence.load();
     if (loaded && typeof loaded.then === "function") loaded.then(start).catch(function () { start(null); });

@@ -95,6 +95,29 @@ body {
 /* Content area */
 .tab-content { padding: 16px 28px; max-width: min(1400px, 94vw); margin: 0 auto; outline: none; }
 .tab-content:focus { outline: none; }
+.auth-gate-wrap {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-gate {
+  max-width: 620px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 26px;
+}
+.auth-gate h2 {
+  margin: 0 0 8px;
+  color: var(--blue-d);
+  font-size: 1.35rem;
+}
+.auth-gate p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
 
 /* Cards & panels */
 .panel {
