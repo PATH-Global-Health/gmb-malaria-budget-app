@@ -40,6 +40,33 @@ body {
   border-radius: 3px; box-shadow: var(--shadow); display: block;
 }
 .title-block h1 { font-size: 1.3rem; margin: 0; color: var(--blue-d); }
+.auth-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 220px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+.auth-status .auth-text { text-align: right; line-height: 1.25; }
+.auth-status .auth-user { color: var(--ink); font-weight: 600; }
+.auth-status .auth-sync { color: var(--muted); }
+.auth-status .auth-sync.error { color: var(--red); }
+.auth-status .auth-sync.saved,
+.auth-status .auth-sync.signed_in { color: var(--green); }
+.auth-status .auth-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--blue);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: .8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.auth-status .auth-btn:hover { background: #f0f5fc; }
 
 /* Tab navigation */
 .tab-nav {

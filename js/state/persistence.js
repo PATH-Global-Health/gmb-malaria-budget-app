@@ -70,13 +70,37 @@ window.GMB = window.GMB || {};
     });
   }
 
+  function isEmpty(data) {
+    data = data || {};
+    return !(data.scenarios || []).length && !(data.costSets || []).length &&
+      !(data.budgets || []).length && !(data.removedSeeds || []).length;
+  }
+
   var persistence = {
     load: function () {
       return idbGet().then(function (payload) {
-        if (payload && payload.data) return payload.data;
+        var localData = payload && payload.data ? payload.data : null;
         var legacy = localLoad();
-        if (legacy) idbSet({ schemaVersion: SCHEMA, savedAt: new Date().toISOString(), data: legacy }).catch(function () {});
-        return legacy;
+        if (!localData && legacy) {
+          localData = legacy;
+          idbSet({ schemaVersion: SCHEMA, savedAt: new Date().toISOString(), data: legacy }).catch(function () {});
+        }
+        if (G.cloud && G.cloud.loadState) {
+          return G.cloud.loadState().then(function (remoteData) {
+            if (remoteData && !isEmpty(remoteData)) {
+              idbSet(payloadFrom(remoteData)).catch(function () {});
+              return remoteData;
+            }
+            if (localData && !isEmpty(localData) && G.cloud.saveState) {
+              G.cloud.saveState(localData).catch(function (e) { console.warn("Could not migrate local data to shared storage:", e); });
+            }
+            return localData || remoteData || null;
+          }).catch(function (e) {
+            console.warn("Could not load shared data; using browser storage:", e);
+            return localData;
+          });
+        }
+        return localData;
       }).catch(function (e) {
         try { return localLoad(); }
         catch (le) { console.warn("Could not load saved data:", e, le); return null; }
@@ -89,6 +113,11 @@ window.GMB = window.GMB || {};
       lastStatus = { state: "saving", message: "Saving..." };
       idbSet(payload).then(function () {
         lastStatus = { state: "saved", message: "Saved", savedAt: payload.savedAt };
+        if (G.cloud && G.cloud.saveState) {
+          G.cloud.saveState(payload.data).catch(function (ce) {
+            console.warn("Could not save shared data:", ce);
+          });
+        }
       }).catch(function (e) {
         try {
           localSave(payload);
