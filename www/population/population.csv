@@ -1,0 +1,379 @@
+adm1,adm2,year,total_pop
+Central River,Janjanbureh,2017,4022
+Central River,Janjanbureh,2018,4082
+Central River,Janjanbureh,2019,4143
+Central River,Janjanbureh,2020,4205
+Central River,Janjanbureh,2021,4268
+Central River,Janjanbureh,2022,4332
+Central River,Janjanbureh,2023,4397
+Central River,Janjanbureh,2024,4463
+Central River,Janjanbureh,2025,4530
+Central River,Lower Fuladu West,2017,43671
+Central River,Lower Fuladu West,2018,44807
+Central River,Lower Fuladu West,2019,45972
+Central River,Lower Fuladu West,2020,47167
+Central River,Lower Fuladu West,2021,48393
+Central River,Lower Fuladu West,2022,49651
+Central River,Lower Fuladu West,2023,50942
+Central River,Lower Fuladu West,2024,52267
+Central River,Lower Fuladu West,2025,53626
+Central River,Lower Saloum,2017,16719
+Central River,Lower Saloum,2018,17054
+Central River,Lower Saloum,2019,17395
+Central River,Lower Saloum,2020,17743
+Central River,Lower Saloum,2021,18097
+Central River,Lower Saloum,2022,18459
+Central River,Lower Saloum,2023,18829
+Central River,Lower Saloum,2024,19205
+Central River,Lower Saloum,2025,19589
+Central River,Niamina Dankunku,2017,6456
+Central River,Niamina Dankunku,2018,6553
+Central River,Niamina Dankunku,2019,6651
+Central River,Niamina Dankunku,2020,6751
+Central River,Niamina Dankunku,2021,6852
+Central River,Niamina Dankunku,2022,6955
+Central River,Niamina Dankunku,2023,7060
+Central River,Niamina Dankunku,2024,7165
+Central River,Niamina Dankunku,2025,7273
+Central River,Niamina East,2017,25834
+Central River,Niamina East,2018,26221
+Central River,Niamina East,2019,26614
+Central River,Niamina East,2020,27014
+Central River,Niamina East,2021,27419
+Central River,Niamina East,2022,27830
+Central River,Niamina East,2023,28248
+Central River,Niamina East,2024,28671
+Central River,Niamina East,2025,29101
+Central River,Niamina West,2017,7579
+Central River,Niamina West,2018,7693
+Central River,Niamina West,2019,7808
+Central River,Niamina West,2020,7925
+Central River,Niamina West,2021,8044
+Central River,Niamina West,2022,8165
+Central River,Niamina West,2023,8287
+Central River,Niamina West,2024,8412
+Central River,Niamina West,2025,8538
+Central River,Niani,2017,30679
+Central River,Niani,2018,31293
+Central River,Niani,2019,31919
+Central River,Niani,2020,32557
+Central River,Niani,2021,33208
+Central River,Niani,2022,33873
+Central River,Niani,2023,34550
+Central River,Niani,2024,35241
+Central River,Niani,2025,35946
+Central River,Nianija,2017,10690
+Central River,Nianija,2018,10904
+Central River,Nianija,2019,11122
+Central River,Nianija,2020,11344
+Central River,Nianija,2021,11571
+Central River,Nianija,2022,11803
+Central River,Nianija,2023,12039
+Central River,Nianija,2024,12280
+Central River,Nianija,2025,12525
+Central River,Sami,2017,26373
+Central River,Sami,2018,26901
+Central River,Sami,2019,27439
+Central River,Sami,2020,27988
+Central River,Sami,2021,28547
+Central River,Sami,2022,29118
+Central River,Sami,2023,29701
+Central River,Sami,2024,30295
+Central River,Sami,2025,30901
+Central River,Upper Fuladu West,2017,49247
+Central River,Upper Fuladu West,2018,50526
+Central River,Upper Fuladu West,2019,51840
+Central River,Upper Fuladu West,2020,53188
+Central River,Upper Fuladu West,2021,54571
+Central River,Upper Fuladu West,2022,55990
+Central River,Upper Fuladu West,2023,57446
+Central River,Upper Fuladu West,2024,58939
+Central River,Upper Fuladu West,2025,60472
+Central River,Upper Saloum,2017,20212
+Central River,Upper Saloum,2018,20617
+Central River,Upper Saloum,2019,21029
+Central River,Upper Saloum,2020,21449
+Central River,Upper Saloum,2021,21878
+Central River,Upper Saloum,2022,22316
+Central River,Upper Saloum,2023,22762
+Central River,Upper Saloum,2024,23218
+Central River,Upper Saloum,2025,23682
+Lower River,Jarra Central,2017,8750
+Lower River,Jarra Central,2018,8855
+Lower River,Jarra Central,2019,8961
+Lower River,Jarra Central,2020,9068
+Lower River,Jarra Central,2021,9177
+Lower River,Jarra Central,2022,9287
+Lower River,Jarra Central,2023,9399
+Lower River,Jarra Central,2024,9512
+Lower River,Jarra Central,2025,9626
+Lower River,Jarra East,2017,16818
+Lower River,Jarra East,2018,17019
+Lower River,Jarra East,2019,17224
+Lower River,Jarra East,2020,17430
+Lower River,Jarra East,2021,17639
+Lower River,Jarra East,2022,17851
+Lower River,Jarra East,2023,18065
+Lower River,Jarra East,2024,18282
+Lower River,Jarra East,2025,18502
+Lower River,Jarra West,2017,27495
+Lower River,Jarra West,2018,27825
+Lower River,Jarra West,2019,28159
+Lower River,Jarra West,2020,28497
+Lower River,Jarra West,2021,28839
+Lower River,Jarra West,2022,29185
+Lower River,Jarra West,2023,29535
+Lower River,Jarra West,2024,29890
+Lower River,Jarra West,2025,30248
+Lower River,Kiang Central,2017,9084
+Lower River,Kiang Central,2018,9193
+Lower River,Kiang Central,2019,9304
+Lower River,Kiang Central,2020,9415
+Lower River,Kiang Central,2021,9528
+Lower River,Kiang Central,2022,9643
+Lower River,Kiang Central,2023,9758
+Lower River,Kiang Central,2024,9875
+Lower River,Kiang Central,2025,9994
+Lower River,Kiang East,2017,7133
+Lower River,Kiang East,2018,7219
+Lower River,Kiang East,2019,7306
+Lower River,Kiang East,2020,7393
+Lower River,Kiang East,2021,7482
+Lower River,Kiang East,2022,7572
+Lower River,Kiang East,2023,7663
+Lower River,Kiang East,2024,7755
+Lower River,Kiang East,2025,7848
+Lower River,Kiang West,2017,15723
+Lower River,Kiang West,2018,15911
+Lower River,Kiang West,2019,16102
+Lower River,Kiang West,2020,16295
+Lower River,Kiang West,2021,16491
+Lower River,Kiang West,2022,16689
+Lower River,Kiang West,2023,16889
+Lower River,Kiang West,2024,17092
+Lower River,Kiang West,2025,17297
+North Bank East,Central Badibu,2017,21431
+North Bank East,Central Badibu,2018,21945
+North Bank East,Central Badibu,2019,22472
+North Bank East,Central Badibu,2020,23011
+North Bank East,Central Badibu,2021,23563
+North Bank East,Central Badibu,2022,24129
+North Bank East,Central Badibu,2023,24708
+North Bank East,Central Badibu,2024,25301
+North Bank East,Central Badibu,2025,25908
+North Bank East,Lower Badibu,2017,19748
+North Bank East,Lower Badibu,2018,20222
+North Bank East,Lower Badibu,2019,20708
+North Bank East,Lower Badibu,2020,21205
+North Bank East,Lower Badibu,2021,21714
+North Bank East,Lower Badibu,2022,22235
+North Bank East,Lower Badibu,2023,22768
+North Bank East,Lower Badibu,2024,23315
+North Bank East,Lower Badibu,2025,23874
+North Bank East,Sabach Sanjar,2017,26089
+North Bank East,Sabach Sanjar,2018,26715
+North Bank East,Sabach Sanjar,2019,27357
+North Bank East,Sabach Sanjar,2020,28013
+North Bank East,Sabach Sanjar,2021,28685
+North Bank East,Sabach Sanjar,2022,29374
+North Bank East,Sabach Sanjar,2023,30079
+North Bank East,Sabach Sanjar,2024,30801
+North Bank East,Sabach Sanjar,2025,31540
+North Bank East,Upper Badibu,2017,53458
+North Bank East,Upper Badibu,2018,54741
+North Bank East,Upper Badibu,2019,56055
+North Bank East,Upper Badibu,2020,57400
+North Bank East,Upper Badibu,2021,58778
+North Bank East,Upper Badibu,2022,60189
+North Bank East,Upper Badibu,2023,61633
+North Bank East,Upper Badibu,2024,63112
+North Bank East,Upper Badibu,2025,64627
+North Bank West,Jokadu,2017,24532
+North Bank West,Jokadu,2018,25121
+North Bank West,Jokadu,2019,25724
+North Bank West,Jokadu,2020,26341
+North Bank West,Jokadu,2021,26974
+North Bank West,Jokadu,2022,27621
+North Bank West,Jokadu,2023,28284
+North Bank West,Jokadu,2024,28963
+North Bank West,Jokadu,2025,29658
+North Bank West,Lower Niumi,2017,62769
+North Bank West,Lower Niumi,2018,64275
+North Bank West,Lower Niumi,2019,65818
+North Bank West,Lower Niumi,2020,67398
+North Bank West,Lower Niumi,2021,69015
+North Bank West,Lower Niumi,2022,70672
+North Bank West,Lower Niumi,2023,72368
+North Bank West,Lower Niumi,2024,74104
+North Bank West,Lower Niumi,2025,75883
+North Bank West,Upper Niumi,2017,33953
+North Bank West,Upper Niumi,2018,34768
+North Bank West,Upper Niumi,2019,35602
+North Bank West,Upper Niumi,2020,36457
+North Bank West,Upper Niumi,2021,37332
+North Bank West,Upper Niumi,2022,38228
+North Bank West,Upper Niumi,2023,39145
+North Bank West,Upper Niumi,2024,40085
+North Bank West,Upper Niumi,2025,41047
+Upper River,Basse,2017,54411
+Upper River,Basse,2018,55826
+Upper River,Basse,2019,57277
+Upper River,Basse,2020,58767
+Upper River,Basse,2021,60295
+Upper River,Basse,2022,61862
+Upper River,Basse,2023,63471
+Upper River,Basse,2024,65121
+Upper River,Basse,2025,66814
+Upper River,Jimara,2017,48160
+Upper River,Jimara,2018,49412
+Upper River,Jimara,2019,50697
+Upper River,Jimara,2020,52015
+Upper River,Jimara,2021,53368
+Upper River,Jimara,2022,54755
+Upper River,Jimara,2023,56179
+Upper River,Jimara,2024,57640
+Upper River,Jimara,2025,59138
+Upper River,Kantora,2017,42501
+Upper River,Kantora,2018,43606
+Upper River,Kantora,2019,44740
+Upper River,Kantora,2020,45903
+Upper River,Kantora,2021,47097
+Upper River,Kantora,2022,48321
+Upper River,Kantora,2023,49577
+Upper River,Kantora,2024,50866
+Upper River,Kantora,2025,52189
+Upper River,Sandu,2017,26217
+Upper River,Sandu,2018,26899
+Upper River,Sandu,2019,27598
+Upper River,Sandu,2020,28316
+Upper River,Sandu,2021,29052
+Upper River,Sandu,2022,29807
+Upper River,Sandu,2023,30582
+Upper River,Sandu,2024,31377
+Upper River,Sandu,2025,32193
+Upper River,Tumana,2017,41229
+Upper River,Tumana,2018,42301
+Upper River,Tumana,2019,43401
+Upper River,Tumana,2020,44529
+Upper River,Tumana,2021,45687
+Upper River,Tumana,2022,46875
+Upper River,Tumana,2023,48094
+Upper River,Tumana,2024,49344
+Upper River,Tumana,2025,50627
+Upper River,Wuli East,2017,26165
+Upper River,Wuli East,2018,26845
+Upper River,Wuli East,2019,27543
+Upper River,Wuli East,2020,28259
+Upper River,Wuli East,2021,28994
+Upper River,Wuli East,2022,29748
+Upper River,Wuli East,2023,30522
+Upper River,Wuli East,2024,31315
+Upper River,Wuli East,2025,32129
+Upper River,Wuli West,2017,24186
+Upper River,Wuli West,2018,24815
+Upper River,Wuli West,2019,25460
+Upper River,Wuli West,2020,26122
+Upper River,Wuli West,2021,26801
+Upper River,Wuli West,2022,27498
+Upper River,Wuli West,2023,28213
+Upper River,Wuli West,2024,28946
+Upper River,Wuli West,2025,29699
+Western 1,Banjul,2017,29590
+Western 1,Banjul,2018,29235
+Western 1,Banjul,2019,28884
+Western 1,Banjul,2020,28538
+Western 1,Banjul,2021,28195
+Western 1,Banjul,2022,27857
+Western 1,Banjul,2023,27522
+Western 1,Banjul,2024,27192
+Western 1,Banjul,2025,26866
+Western 1,Kanifing,2017,401856
+Western 1,Kanifing,2018,408286
+Western 1,Kanifing,2019,414818
+Western 1,Kanifing,2020,421455
+Western 1,Kanifing,2021,428199
+Western 1,Kanifing,2022,435050
+Western 1,Kanifing,2023,442011
+Western 1,Kanifing,2024,449083
+Western 1,Kanifing,2025,456268
+Western 1,Kombo North,2017,423626
+Western 1,Kombo North,2018,447772
+Western 1,Kombo North,2019,473295
+Western 1,Kombo North,2020,500273
+Western 1,Kombo North,2021,528789
+Western 1,Kombo North,2022,558930
+Western 1,Kombo North,2023,590789
+Western 1,Kombo North,2024,624464
+Western 1,Kombo North,2025,660058
+Western 2,Foni Bintang Karanai,2017,21369
+Western 2,Foni Bintang Karanai,2018,22587
+Western 2,Foni Bintang Karanai,2019,23874
+Western 2,Foni Bintang Karanai,2020,25235
+Western 2,Foni Bintang Karanai,2021,26673
+Western 2,Foni Bintang Karanai,2022,28194
+Western 2,Foni Bintang Karanai,2023,29801
+Western 2,Foni Bintang Karanai,2024,31499
+Western 2,Foni Bintang Karanai,2025,33295
+Western 2,Foni Bondali,2017,9459
+Western 2,Foni Bondali,2018,9998
+Western 2,Foni Bondali,2019,10568
+Western 2,Foni Bondali,2020,11171
+Western 2,Foni Bondali,2021,11807
+Western 2,Foni Bondali,2022,12480
+Western 2,Foni Bondali,2023,13192
+Western 2,Foni Bondali,2024,13944
+Western 2,Foni Bondali,2025,14739
+Western 2,Foni Brefet,2017,18128
+Western 2,Foni Brefet,2018,19162
+Western 2,Foni Brefet,2019,20254
+Western 2,Foni Brefet,2020,21408
+Western 2,Foni Brefet,2021,22629
+Western 2,Foni Brefet,2022,23918
+Western 2,Foni Brefet,2023,25282
+Western 2,Foni Brefet,2024,26723
+Western 2,Foni Brefet,2025,28246
+Western 2,Foni Jarrol,2017,8592
+Western 2,Foni Jarrol,2018,9081
+Western 2,Foni Jarrol,2019,9599
+Western 2,Foni Jarrol,2020,10146
+Western 2,Foni Jarrol,2021,10725
+Western 2,Foni Jarrol,2022,11336
+Western 2,Foni Jarrol,2023,11982
+Western 2,Foni Jarrol,2024,12665
+Western 2,Foni Jarrol,2025,13387
+Western 2,Foni Kansala,2017,17631
+Western 2,Foni Kansala,2018,18636
+Western 2,Foni Kansala,2019,19699
+Western 2,Foni Kansala,2020,20822
+Western 2,Foni Kansala,2021,22008
+Western 2,Foni Kansala,2022,23263
+Western 2,Foni Kansala,2023,24589
+Western 2,Foni Kansala,2024,25990
+Western 2,Foni Kansala,2025,27472
+Western 2,Kombo Central,2017,174791
+Western 2,Kombo Central,2018,184754
+Western 2,Kombo Central,2019,195285
+Western 2,Kombo Central,2020,206416
+Western 2,Kombo Central,2021,218181
+Western 2,Kombo Central,2022,230618
+Western 2,Kombo Central,2023,243763
+Western 2,Kombo Central,2024,257658
+Western 2,Kombo Central,2025,272344
+Western 2,Kombo East,2017,52838
+Western 2,Kombo East,2018,55850
+Western 2,Kombo East,2019,59033
+Western 2,Kombo East,2020,62398
+Western 2,Kombo East,2021,65955
+Western 2,Kombo East,2022,69715
+Western 2,Kombo East,2023,73688
+Western 2,Kombo East,2024,77888
+Western 2,Kombo East,2025,82328
+Western 2,Kombo South,2017,133288
+Western 2,Kombo South,2018,140885
+Western 2,Kombo South,2019,148915
+Western 2,Kombo South,2020,157404
+Western 2,Kombo South,2021,166376
+Western 2,Kombo South,2022,175859
+Western 2,Kombo South,2023,185883
+Western 2,Kombo South,2024,196478
+Western 2,Kombo South,2025,207678

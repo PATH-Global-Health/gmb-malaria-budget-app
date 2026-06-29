@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Gambia Malaria Budgeting Tool</title>
+  <link rel="stylesheet" href="css/base.css?v=7" />
+</head>
+<body>
+  <header class="app-header">
+    <img src="assets/PATH_Logo_Color.png" alt="PATH" class="logo" />
+    <svg class="flag" viewBox="0 0 27 18" role="img" aria-label="Flag of The Gambia">
+      <rect width="27" height="6"  y="0"  fill="#CE1126" />
+      <rect width="27" height="1"  y="6"  fill="#ffffff" />
+      <rect width="27" height="4"  y="7"  fill="#0C1C8C" />
+      <rect width="27" height="1"  y="11" fill="#ffffff" />
+      <rect width="27" height="6"  y="12" fill="#3A7728" />
+    </svg>
+    <div class="title-block">
+      <h1>The Gambia Malaria Budgeting Tool</h1>
+    </div>
+  </header>
+
+  <nav class="tab-nav" id="tab-nav" aria-label="Workflow steps"></nav>
+
+  <main id="tab-content" class="tab-content" tabindex="-1"></main>
+
+  <footer class="app-footer">
+    <span>PATH · The Gambia Malaria Budgeting Tool</span>
+    <span id="data-status" class="data-status"></span>
+  </footer>
+
+  <!-- Reference data (plain globals so the app runs straight from disk, no server needed) -->
+  <script src="data/population.js"></script>
+  <script src="data/incidence.js"></script>
+  <script src="data/geo.js"></script>
+  <script src="data/default-unit-costs.js?v=3"></script>
+
+  <!-- Core -->
+  <script src="js/util/format.js"></script>
+  <script src="js/util/xlsx.js?v=4"></script>
+  <script src="js/util/budget-export.js?v=5"></script>
+  <script src="js/data/reference.js"></script>
+  <script src="js/data/assumptions.js"></script>
+  <script src="js/data/strata.js"></script>
+  <script src="js/data/catalog.js?v=5"></script>
+  <script src="js/content/help.js?v=8"></script>
+  <script src="js/state/store.js?v=2"></script>
+  <script src="js/state/persistence.js?v=2"></script>
+  <script src="js/ui/components.js?v=4"></script>
+  <script src="js/ui/map.js?v=2"></script>
+  <script src="js/ui/charts.js?v=17"></script>
+
+  <!-- Budget engine (pure) -->
+  <script src="js/engine/quantification.js?v=6"></script>
+  <script src="js/engine/costing.js?v=5"></script>
+  <script src="js/engine/aggregate.js?v=3"></script>
+  <script src="js/engine/index.js?v=7"></script>
+
+  <!-- Tabs -->
+  <script src="js/ui/tab-overview.js?v=4"></script>
+  <script src="js/ui/tab-methods.js?v=6"></script>
+  <script src="js/ui/tab-data.js?v=4"></script>
+  <script src="js/ui/tab-scenario.js?v=6"></script>
+  <script src="js/ui/tab-costs.js?v=5"></script>
+  <script src="js/ui/tab-generate.js?v=14"></script>
+  <script src="js/ui/tab-viz.js?v=17"></script>
+  <script src="js/ui/tab-compare.js?v=12"></script>
+
+  <!-- App -->
+  <script src="js/router.js?v=3"></script>
+  <script src="js/main.js?v=2"></script>
+</body>
+</html>
