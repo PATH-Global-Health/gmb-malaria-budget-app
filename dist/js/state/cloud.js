@@ -171,15 +171,65 @@ window.GMB = window.GMB || {};
     };
   }
 
+  function budgetSummary(b) {
+    var out = {};
+    Object.keys(b || {}).forEach(function (k) {
+      if (k !== "costLineRows" && k !== "costRows" && k !== "quantityRows" && k !== "diagnostics") out[k] = b[k];
+    });
+    return out;
+  }
+
+  function manifestFromState(state) {
+    var clean = cleanState(state);
+    return {
+      scenarios: clean.scenarios,
+      costSets: clean.costSets,
+      budgets: clean.budgets.map(budgetSummary),
+      budgetIndex: clean.budgets.map(function (b) {
+        return {
+          id: b.id,
+          name: b.name || "",
+          scenarioId: b.scenarioId || "",
+          costSetId: b.costSetId || "",
+          generatedAt: b.generatedAt || "",
+          sourceSig: b.sourceSig || "",
+          schemaVersion: b.schemaVersion || ""
+        };
+      }),
+      removedSeeds: clean.removedSeeds
+    };
+  }
+
+  async function apiJson(path, opts) {
+    var res = await fetchWithTimeout(CFG.apiBase + path, Object.assign({
+      headers: { authorization: await authHeader() }
+    }, opts || {}), opts && opts.timeout ? opts.timeout : 45000);
+    if (!res.ok) {
+      var detail = "";
+      try { detail = await res.text(); } catch (e) {}
+      throw new Error("AWS API " + res.status + (detail ? ": " + detail.slice(0, 160) : ""));
+    }
+    return await res.json();
+  }
+
   async function loadState() {
     if (!CFG.enabled || !(await validTokens())) return null;
     setStatus("loading", "Loading shared data...", { user: userLabel(loadTokens()) });
     try {
-      var res = await fetchWithTimeout(CFG.apiBase + "/state", { headers: { authorization: await authHeader() } }, 45000);
-      if (!res.ok) throw new Error("Could not load shared state (" + res.status + ")");
-      var data = await res.json();
+      var data = await apiJson("/state");
+      var state = cleanState(data);
+      var index = Array.isArray(data.budgetIndex) ? data.budgetIndex : [];
+      if (index.length) {
+        var loaded = [];
+        for (var i = 0; i < index.length; i++) {
+          setStatus("loading", "Loading shared budget " + (i + 1) + " of " + index.length + "...", { user: userLabel(loadTokens()) });
+          var detail = await apiJson("/state?part=budget&id=" + encodeURIComponent(index[i].id));
+          if (detail && detail.budget) loaded.push(detail.budget);
+        }
+        state.budgets = loaded;
+      }
       setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded", { user: userLabel(loadTokens()) });
-      return cleanState(data);
+      return state;
     } catch (e) {
       setStatus("error", "Shared load failed: " + (e && e.message ? e.message : "network error"), { user: userLabel(loadTokens()) });
       throw e;
@@ -188,11 +238,13 @@ window.GMB = window.GMB || {};
 
   async function saveState(state) {
     if (!CFG.enabled || !(await validTokens())) return null;
-    var body = JSON.stringify(cleanState(state));
+    var clean = cleanState(state);
+    var manifest = manifestFromState(clean);
+    var body = JSON.stringify(manifest);
     var size = byteLength(body);
-    setStatus("saving", "Saving shared data (" + fmtBytes(size) + ")...", { user: userLabel(loadTokens()) });
+    setStatus("saving", "Saving shared manifest (" + fmtBytes(size) + ")...", { user: userLabel(loadTokens()) });
     try {
-      var res = await fetchWithTimeout(CFG.apiBase + "/state", {
+      var res = await fetchWithTimeout(CFG.apiBase + "/state?part=manifest", {
         method: "PUT",
         headers: { "content-type": "application/json", authorization: await authHeader() },
         body: body
@@ -203,7 +255,21 @@ window.GMB = window.GMB || {};
         throw new Error("Could not save shared state (" + res.status + ")" + (detail ? ": " + detail.slice(0, 160) : ""));
       }
       var out = await res.json();
-      setStatus("saved", "Shared data saved (" + fmtBytes(size) + ")", { user: userLabel(loadTokens()), savedAt: out.savedAt });
+      for (var i = 0; i < clean.budgets.length; i++) {
+        var budgetBody = JSON.stringify(clean.budgets[i]);
+        setStatus("saving", "Saving shared budget " + (i + 1) + " of " + clean.budgets.length + " (" + fmtBytes(byteLength(budgetBody)) + ")...", { user: userLabel(loadTokens()) });
+        var bres = await fetchWithTimeout(CFG.apiBase + "/state?part=budget&id=" + encodeURIComponent(clean.budgets[i].id), {
+          method: "PUT",
+          headers: { "content-type": "application/json", authorization: await authHeader() },
+          body: budgetBody
+        }, 60000);
+        if (!bres.ok) {
+          var bdetail = "";
+          try { bdetail = await bres.text(); } catch (e) {}
+          throw new Error("Could not save shared budget " + clean.budgets[i].id + " (" + bres.status + ")" + (bdetail ? ": " + bdetail.slice(0, 160) : ""));
+        }
+      }
+      setStatus("saved", "Shared data saved", { user: userLabel(loadTokens()), savedAt: out.savedAt });
       return out;
     } catch (e) {
       var msg = e && e.name === "AbortError" ? "Shared save timed out" : "Shared save failed";
