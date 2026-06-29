@@ -35,6 +35,12 @@ window.GMB = window.GMB || {};
     return bytes + " B";
   }
 
+  function chunksOf(text, size) {
+    var chunks = [];
+    for (var i = 0; i < text.length; i += size) chunks.push(text.slice(i, i + size));
+    return chunks.length ? chunks : [""];
+  }
+
   async function fetchWithTimeout(url, opts, ms) {
     var ctl = new AbortController();
     var timer = setTimeout(function () { ctl.abort(); }, ms || 45000);
@@ -257,16 +263,19 @@ window.GMB = window.GMB || {};
       var out = await res.json();
       for (var i = 0; i < clean.budgets.length; i++) {
         var budgetBody = JSON.stringify(clean.budgets[i]);
-        setStatus("saving", "Saving shared budget " + (i + 1) + " of " + clean.budgets.length + " (" + fmtBytes(byteLength(budgetBody)) + ")...", { user: userLabel(loadTokens()) });
-        var bres = await fetchWithTimeout(CFG.apiBase + "/state?part=budget&id=" + encodeURIComponent(clean.budgets[i].id), {
-          method: "PUT",
-          headers: { "content-type": "application/json", authorization: await authHeader() },
-          body: budgetBody
-        }, 60000);
-        if (!bres.ok) {
-          var bdetail = "";
-          try { bdetail = await bres.text(); } catch (e) {}
-          throw new Error("Could not save shared budget " + clean.budgets[i].id + " (" + bres.status + ")" + (bdetail ? ": " + bdetail.slice(0, 160) : ""));
+        var parts = chunksOf(budgetBody, 450000);
+        for (var j = 0; j < parts.length; j++) {
+          setStatus("saving", "Saving shared budget " + (i + 1) + " of " + clean.budgets.length + ", chunk " + (j + 1) + " of " + parts.length + " (" + fmtBytes(byteLength(parts[j])) + ")...", { user: userLabel(loadTokens()) });
+          var bres = await fetchWithTimeout(CFG.apiBase + "/state?part=budget-chunk&id=" + encodeURIComponent(clean.budgets[i].id) + "&chunk=" + j + "&total=" + parts.length, {
+            method: "PUT",
+            headers: { "content-type": "text/plain", authorization: await authHeader() },
+            body: parts[j]
+          }, 60000);
+          if (!bres.ok) {
+            var bdetail = "";
+            try { bdetail = await bres.text(); } catch (e) {}
+            throw new Error("Could not save shared budget " + clean.budgets[i].id + " chunk " + (j + 1) + " (" + bres.status + ")" + (bdetail ? ": " + bdetail.slice(0, 160) : ""));
+          }
         }
       }
       setStatus("saved", "Shared data saved", { user: userLabel(loadTokens()), savedAt: out.savedAt });
