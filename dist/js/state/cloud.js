@@ -24,6 +24,27 @@ window.GMB = window.GMB || {};
     emit();
   }
 
+  function byteLength(text) {
+    if (window.TextEncoder) return new TextEncoder().encode(text || "").length;
+    return (text || "").length;
+  }
+
+  function fmtBytes(bytes) {
+    if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB";
+    if (bytes >= 1024) return Math.round(bytes / 1024) + " KB";
+    return bytes + " B";
+  }
+
+  async function fetchWithTimeout(url, opts, ms) {
+    var ctl = new AbortController();
+    var timer = setTimeout(function () { ctl.abort(); }, ms || 45000);
+    try {
+      return await fetch(url, Object.assign({}, opts || {}, { signal: ctl.signal }));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function base64Url(bytes) {
     var str = "";
     new Uint8Array(bytes).forEach(function (b) { str += String.fromCharCode(b); });
@@ -153,25 +174,42 @@ window.GMB = window.GMB || {};
   async function loadState() {
     if (!CFG.enabled || !(await validTokens())) return null;
     setStatus("loading", "Loading shared data...", { user: userLabel(loadTokens()) });
-    var res = await fetch(CFG.apiBase + "/state", { headers: { authorization: await authHeader() } });
-    if (!res.ok) throw new Error("Could not load shared state");
-    var data = await res.json();
-    setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded", { user: userLabel(loadTokens()) });
-    return cleanState(data);
+    try {
+      var res = await fetchWithTimeout(CFG.apiBase + "/state", { headers: { authorization: await authHeader() } }, 45000);
+      if (!res.ok) throw new Error("Could not load shared state (" + res.status + ")");
+      var data = await res.json();
+      setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded", { user: userLabel(loadTokens()) });
+      return cleanState(data);
+    } catch (e) {
+      setStatus("error", "Shared load failed: " + (e && e.message ? e.message : "network error"), { user: userLabel(loadTokens()) });
+      throw e;
+    }
   }
 
   async function saveState(state) {
     if (!CFG.enabled || !(await validTokens())) return null;
-    setStatus("saving", "Saving shared data...", { user: userLabel(loadTokens()) });
-    var res = await fetch(CFG.apiBase + "/state", {
-      method: "PUT",
-      headers: { "content-type": "application/json", authorization: await authHeader() },
-      body: JSON.stringify(cleanState(state))
-    });
-    if (!res.ok) throw new Error("Could not save shared state");
-    var out = await res.json();
-    setStatus("saved", "Shared data saved", { user: userLabel(loadTokens()), savedAt: out.savedAt });
-    return out;
+    var body = JSON.stringify(cleanState(state));
+    var size = byteLength(body);
+    setStatus("saving", "Saving shared data (" + fmtBytes(size) + ")...", { user: userLabel(loadTokens()) });
+    try {
+      var res = await fetchWithTimeout(CFG.apiBase + "/state", {
+        method: "PUT",
+        headers: { "content-type": "application/json", authorization: await authHeader() },
+        body: body
+      }, 60000);
+      if (!res.ok) {
+        var detail = "";
+        try { detail = await res.text(); } catch (e) {}
+        throw new Error("Could not save shared state (" + res.status + ")" + (detail ? ": " + detail.slice(0, 160) : ""));
+      }
+      var out = await res.json();
+      setStatus("saved", "Shared data saved (" + fmtBytes(size) + ")", { user: userLabel(loadTokens()), savedAt: out.savedAt });
+      return out;
+    } catch (e) {
+      var msg = e && e.name === "AbortError" ? "Shared save timed out" : "Shared save failed";
+      setStatus("error", msg + ": " + (e && e.message ? e.message : "network error"), { user: userLabel(loadTokens()) });
+      throw e;
+    }
   }
 
   function signOut() {
