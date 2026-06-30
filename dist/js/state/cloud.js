@@ -177,6 +177,11 @@ window.GMB = window.GMB || {};
     };
   }
 
+  function countLabel(state) {
+    state = cleanState(state);
+    return state.scenarios.length + " scenario(s), " + state.costSets.length + " cost set(s), " + state.budgets.length + " budget(s)";
+  }
+
   function budgetSummary(b) {
     var out = {};
     Object.keys(b || {}).forEach(function (k) {
@@ -234,7 +239,7 @@ window.GMB = window.GMB || {};
         }
         state.budgets = loaded;
       }
-      setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded", { user: userLabel(loadTokens()) });
+      setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded: " + countLabel(state), { user: userLabel(loadTokens()) });
       return state;
     } catch (e) {
       setStatus("error", "Shared load failed: " + (e && e.message ? e.message : "network error"), { user: userLabel(loadTokens()) });
@@ -278,7 +283,7 @@ window.GMB = window.GMB || {};
           }
         }
       }
-      setStatus("saved", "Shared data saved", { user: userLabel(loadTokens()), savedAt: out.savedAt });
+      setStatus("saved", "Shared data saved: " + countLabel(clean), { user: userLabel(loadTokens()), savedAt: out.savedAt });
       return out;
     } catch (e) {
       var msg = e && e.name === "AbortError" ? "Shared save timed out" : "Shared save failed";

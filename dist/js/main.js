@@ -30,6 +30,14 @@
       btn.addEventListener("click", function () { G.cloud.signIn(); });
       el.appendChild(btn);
     } else {
+      var syncBtn = document.createElement("button");
+      syncBtn.type = "button";
+      syncBtn.className = "auth-btn";
+      syncBtn.textContent = "Sync now";
+      syncBtn.addEventListener("click", function () {
+        if (G.cloud && G.cloud.saveState) G.cloud.saveState(G.store.get()).catch(function (e) { console.error(e); });
+      });
+      el.appendChild(syncBtn);
       btn.textContent = "Sign out";
       btn.addEventListener("click", function () { G.cloud.signOut(); });
       el.appendChild(btn);
