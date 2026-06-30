@@ -21,6 +21,7 @@ Key folders:
 | `css/` | App styling |
 | `data/` | Reference population, incidence, geography, and default cost data |
 | `technical-management/` | Technical notes, setup documentation, and handover materials |
+| `user-guidance/` | Non-technical launch email, quick start guide, and user guide in Markdown and Word formats |
 | `.github/workflows/` | GitHub Actions workflow for GitHub Pages deployment |
 
 ## How The App Works

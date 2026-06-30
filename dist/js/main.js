@@ -18,6 +18,7 @@
     var sync = document.createElement("div");
     sync.className = "auth-sync " + st.state;
     sync.textContent = st.message || "";
+    sync.title = "Shared saving status. 'Shared data loaded' means this browser loaded the shared workspace. 'Shared data saved' means your latest saved work reached shared storage. 'Skipped' means this browser was prevented from overwriting shared budgets.";
     text.appendChild(user);
     text.appendChild(sync);
     el.appendChild(text);
@@ -34,9 +35,10 @@
       syncBtn.type = "button";
       syncBtn.className = "auth-btn";
       syncBtn.textContent = "Sync now";
+      syncBtn.title = "Use only from a browser that has the budget library you want to preserve. Most users do not need this unless asked during troubleshooting.";
       if (!((G.store.get().budgets || []).length)) {
         syncBtn.disabled = true;
-        syncBtn.title = "No local budgets to sync from this browser";
+        syncBtn.title = "No local budgets to sync from this browser. Use only from a browser that has the budget library you want to preserve.";
       }
       syncBtn.addEventListener("click", function () {
         if (G.cloud && G.cloud.saveState) G.cloud.saveState(G.store.get()).catch(function (e) { console.error(e); });
@@ -67,7 +69,7 @@
     var title = document.createElement("h2");
     title.textContent = "Sign in to access the budgeting workspace";
     var body = document.createElement("p");
-    body.textContent = "The hosted Gambia budgeting app uses PATH-managed sign-in so scenarios, cost sets, and generated budgets can be shared across authorised users.";
+    body.textContent = "The hosted Gambia budgeting app uses PATH-managed sign-in so scenarios, cost sets, and generated budgets can be shared across authorised users. If you were given a temporary password, sign in with it and then create your own password when prompted.";
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn";

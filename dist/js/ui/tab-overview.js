@@ -40,9 +40,12 @@ GMB.tabs.overview = {
     var designedFor = [
       "Strategic multi-year intervention budgeting at national or sub-national level",
       "Comparing the cost of different intervention packages and coverage scenarios",
-      "Funding gap discussions and donor planning"
+      "Funding gap discussions and donor planning",
+      "SNT-based budgeting for the seven included intervention areas"
     ];
     var notFor = [
+      "Case management or other interventions outside the included SNT intervention areas",
+      "Programme/activity cost areas not represented in the uploaded/default unit cost file",
       "Activity-level or micro-planning costing workflows",
       "Automatic generation of a complete GF Detailed Budget format",
       "Real-time financial tracking or expenditure monitoring"
@@ -54,8 +57,16 @@ GMB.tabs.overview = {
       el("p", { class: "fit-title bad", style: "margin-top:14px", text: "Not designed for" }), list(notFor)
     ]);
 
+    var scopePanel = el("div", { class: "panel" }, [
+      el("h2", { text: "Current scope" }),
+      el("p", { class: "lead", text: "This version supports SNT-based budgeting for Mass ITN campaign, Routine / continuous ITN, Indoor residual spraying, Seasonal malaria chemoprevention, IPT for school-age children, Malaria vaccine, and IPTp in pregnancy." }),
+      el("p", { text: "It does not currently budget case management, other interventions, or programme/activity cost categories that are not included in the uploaded/default unit cost file." }),
+      el("p", { text: "Shared saving: wait for the header to show Shared data saved before closing. The app shares saved versions, but it is not live co-editing, so avoid editing the same scenario or cost set at the same time." })
+    ]);
+
     // How to use  +  What it is for, side by side
     root.appendChild(el("div", { class: "overview-cols" }, [stepsPanel, whatPanel]));
+    root.appendChild(scopePanel);
 
     // Saved-work strip
     root.appendChild(el("div", { class: "panel saved-strip" }, [

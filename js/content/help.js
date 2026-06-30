@@ -19,7 +19,8 @@ GMB.content = {
     { tab: "generate", title: "3. Generate the budget", lead: "Combine a scenario with a cost set to produce a budgeted scenario.",
       points: ["Pick a scenario and a cost set, then press Generate - budgets are automatically calculated and saved to the tool.",
         "Queue several combinations to generate multiple budgets at once.",
-        "Budgets appear in the library, ready to explore or compare."] },
+        "Budgets appear in the library, ready to explore or compare.",
+        "On the hosted app, wait for the header to show Shared data saved before closing the browser."] },
     { tab: "viz", title: "4. Budget visualisation", lead: "Visualisations and tables assess cost implications, funding gaps, and cost drivers.",
       points: ["Use the filters on the left to focus on certain years, interventions or geographies.",
         "Switch an intervention off to instantly see how much the budget would drop.",
@@ -61,7 +62,7 @@ GMB.content = {
         "Give the budget a name and description, then press Generate now — it saves to the library automatically.",
         "Or add several scenario × cost-set combinations to the queue and generate them together.",
         "From the library, open a budget to visualise it, or tick budgets and press Compare."],
-      tips: ["If a budget already exists for that combination you'll be offered Regenerate instead of a duplicate.", "'Out of date' means the scenario or cost set changed after the budget was generated — regenerate to refresh it."] },
+      tips: ["If a budget already exists for that combination you'll be offered Regenerate instead of a duplicate.", "'Out of date' means the scenario or cost set changed after the budget was generated — regenerate to refresh it.", "The hosted app shares saved work, but it is not live co-editing. Avoid two people editing the same scenario or cost set at the same time.", "Use Sync now only from a browser that has the budget library you want to preserve."] },
 
     viz: { intro: "Explore one budget in depth.",
       steps: ["Pick a budget at the top of the filter panel on the left.",
@@ -84,8 +85,9 @@ GMB.content = {
       lead: "This tool turns a plan — which interventions to deliver, where, and at what coverage — into a fully costed, multi-year malaria budget. It works in two steps: first it estimates the quantity of each commodity needed in every district and year, then it applies unit costs.",
       blocks: [
         { callout: { type: "info", title: "Two steps", items: ["Quantification — how much commodity is needed.", "Costing — what that commodity costs to procure, distribute etc."] } },
-        { p: "Seven interventions are supported. Choose one on the left to see exactly how it is quantified, the default assumptions, and any important notes. The cross-cutting sections cover costing, all the assumptions, the data behind the tool, and the tools limitations." },
-        { callout: { type: "limit", title: "Not modelled in this version", items: ["Case management (diagnosis of and treatment of uncomplicated and severe malaria).", "Funder-by-funder budget breakdowns.", "Activity-level micro-planning detail."] } }
+        { p: "Seven SNT-based intervention areas are supported. Choose one on the left to see exactly how it is quantified, the default assumptions, and any important notes. The cross-cutting sections cover costing, all the assumptions, the data behind the tool, and the tools limitations." },
+        { callout: { type: "info", title: "Current scope of the tool", items: ["Mass ITN campaign.", "Routine / continuous ITN.", "Indoor residual spraying.", "Seasonal malaria chemoprevention.", "IPT for school-age children.", "Malaria vaccine.", "IPTp in pregnancy."] } },
+        { callout: { type: "limit", title: "Not modelled in this version", items: ["Case management.", "Other malaria interventions not listed above.", "Programme or activity cost areas that are not represented in the uploaded/default unit cost file.", "Funder-by-funder budget breakdowns.", "Activity-level micro-planning detail."] } }
       ]
     },
     interventions: [
