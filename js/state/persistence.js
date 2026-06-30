@@ -76,6 +76,27 @@ window.GMB = window.GMB || {};
       !(data.budgets || []).length && !(data.removedSeeds || []).length;
   }
 
+  function mergeById(a, b) {
+    var out = [], seen = {};
+    (a || []).concat(b || []).forEach(function (x) {
+      if (!x || !x.id) return;
+      if (!seen[x.id]) { seen[x.id] = true; out.push(x); }
+      else out = out.map(function (old) { return old.id === x.id ? Object.assign({}, old, x) : old; });
+    });
+    return out;
+  }
+
+  function mergeState(localData, remoteData) {
+    if (!localData) return remoteData;
+    if (!remoteData) return localData;
+    return {
+      scenarios: mergeById(remoteData.scenarios, localData.scenarios),
+      costSets: mergeById(remoteData.costSets, localData.costSets),
+      budgets: mergeById(remoteData.budgets, localData.budgets),
+      removedSeeds: Array.from(new Set([].concat(remoteData.removedSeeds || [], localData.removedSeeds || [])))
+    };
+  }
+
   var persistence = {
     load: function () {
       return idbGet().then(function (payload) {
@@ -88,8 +109,12 @@ window.GMB = window.GMB || {};
         if (G.cloud && G.cloud.loadState) {
           return G.cloud.loadState().then(function (remoteData) {
             if (remoteData && !isEmpty(remoteData)) {
-              idbSet(payloadFrom(remoteData)).catch(function () {});
-              return remoteData;
+              var merged = mergeState(localData, remoteData);
+              idbSet(payloadFrom(merged)).catch(function () {});
+              if (localData && (localData.budgets || []).length > (remoteData.budgets || []).length && G.cloud.saveState) {
+                G.cloud.saveState(merged).catch(function (e) { console.warn("Could not restore local budgets to shared storage:", e); });
+              }
+              return merged;
             }
             if (localData && !isEmpty(localData) && G.cloud.saveState) {
               G.cloud.saveState(localData).catch(function (e) { console.warn("Could not migrate local data to shared storage:", e); });
