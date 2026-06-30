@@ -22,7 +22,7 @@ The tool supports SNT-based budgeting for:
 - Malaria vaccine
 - IPTp in pregnancy
 
-It does not currently support case management, other interventions, or programme/activity cost categories that are not included in the uploaded/default unit cost file.
+It does not currently support case management, other interventions, GF detailed budget formatted data, or programme/activity cost categories that are not included in the uploaded/default unit cost file.
 
 ## 3. Generate Or Open A Budget
 
@@ -31,7 +31,7 @@ It does not currently support case management, other interventions, or programme
 3. Select a cost set.
 4. Click Generate now, or open an existing budget from the Budget library.
 
-If a warning appears before generation, read it before using the budget. Warnings usually mean that one intervention, type, or cost pathway may not be fully costed.
+If a warning appears before generation, read it before using the budget. Warnings usually mean that one intervention, type, or cost pathway may not be fully costed, or that the budget is out of date because the scenario or cost dataset has changed.
 
 ## 4. View Outputs
 
@@ -41,19 +41,26 @@ Go to Budget visualisation to review:
 - budget by intervention
 - budget by cost category
 - maps and geographic summaries
-- line-level cost drivers
+- cost drivers
+- budget requirements compared to an available funding envelope
 
 Use the filters to focus on specific years, interventions, cost categories, or geographies.
 
-## 5. Export Excel
+## 5. Compare Budgets
+
+Go to Budget comparison to review budgets against each other.
+
+Use a baseline budget to see how another budget changes the total cost, intervention mix, yearly profile, and main cost drivers.
+
+## 6. Export Excel
 
 From Budget visualisation or Budget comparison, click the Excel export option.
 
 The workbook includes summaries, quantities, detailed cost lines, diagnostics, and assumptions. The Cost detail sheet is the best place to check how each line was calculated.
 
-## 6. Shared Saving Messages
+## 7. Shared Saving Messages
 
-The top-right corner shows shared saving status.
+The top-right corner shows shared saving status so that users across multiple computers can check whether data is synced.
 
 - `Shared data loaded`: the browser has loaded the shared workspace.
 - `Shared data saved`: your latest saved work has reached shared storage.
@@ -63,7 +70,7 @@ Wait for `Shared data saved` before closing the browser.
 
 Use `Sync now` only if asked during troubleshooting, or if this browser has the budget library that should be preserved.
 
-## 7. Basic Troubleshooting
+## 8. Basic Troubleshooting
 
 If you cannot sign in, check that you are using your email address and the temporary password exactly.
 
@@ -71,6 +78,4 @@ If you do not see a shared budget, refresh the page and wait for `Shared data lo
 
 If a budget is marked out of date, regenerate it from the Budget generation tab.
 
-If shared saving shows an error, do not keep editing. Take a screenshot and contact support.
-
-Support contact: [support contact]
+If shared saving shows an error, do not keep editing. Take a screenshot and contact Hayley.
