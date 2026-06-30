@@ -15,6 +15,7 @@ window.GMB = window.GMB || {};
   var VERIFIER_KEY = "gmb_mbt_pkce_verifier";
   var STATUS = { state: CFG.enabled ? "signed_out" : "disabled", message: CFG.enabled ? "Shared sync off" : "Local-only mode" };
   var lastRemoteBudgetCount = 0;
+  var lastRemoteWasEmpty = false;
 
   function emit() {
     if (typeof G.cloud.onStatusChange === "function") G.cloud.onStatusChange(STATUS);
@@ -241,6 +242,7 @@ window.GMB = window.GMB || {};
         state.budgets = loaded;
       }
       lastRemoteBudgetCount = state.budgets.length;
+      lastRemoteWasEmpty = !!(data.remote && data.remote.empty);
       setStatus("signed_in", data.remote && data.remote.empty ? "Shared store is empty" : "Shared data loaded: " + countLabel(state), { user: userLabel(loadTokens()) });
       return state;
     } catch (e) {
@@ -252,8 +254,8 @@ window.GMB = window.GMB || {};
   async function saveState(state) {
     if (!CFG.enabled || !(await validTokens())) return null;
     var clean = cleanState(state);
-    if (!clean.budgets.length && lastRemoteBudgetCount > 0) {
-      setStatus("error", "Shared save skipped: would remove " + lastRemoteBudgetCount + " shared budget(s)", { user: userLabel(loadTokens()) });
+    if (!clean.budgets.length && !lastRemoteWasEmpty) {
+      setStatus("error", "Shared save skipped: this browser has 0 local budgets", { user: userLabel(loadTokens()) });
       return null;
     }
     var manifest = manifestFromState(clean);

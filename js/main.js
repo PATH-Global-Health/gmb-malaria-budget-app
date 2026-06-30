@@ -34,6 +34,10 @@
       syncBtn.type = "button";
       syncBtn.className = "auth-btn";
       syncBtn.textContent = "Sync now";
+      if (!((G.store.get().budgets || []).length)) {
+        syncBtn.disabled = true;
+        syncBtn.title = "No local budgets to sync from this browser";
+      }
       syncBtn.addEventListener("click", function () {
         if (G.cloud && G.cloud.saveState) G.cloud.saveState(G.store.get()).catch(function (e) { console.error(e); });
       });
