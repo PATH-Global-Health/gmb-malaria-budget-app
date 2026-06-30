@@ -97,6 +97,11 @@ window.GMB = window.GMB || {};
             return localData || remoteData || null;
           }).catch(function (e) {
             console.warn("Could not load shared data; using browser storage:", e);
+            if (localData && !isEmpty(localData) && G.cloud.saveState) {
+              G.cloud.saveState(localData).catch(function (se) {
+                console.warn("Could not repair shared data from browser storage:", se);
+              });
+            }
             return localData;
           });
         }
