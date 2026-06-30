@@ -233,13 +233,31 @@ window.GMB = window.GMB || {};
       var state = cleanState(data);
       var index = Array.isArray(data.budgetIndex) ? data.budgetIndex : [];
       if (index.length) {
-        var loaded = [];
+        var loaded = state.budgets.slice();
+        var failed = 0;
         for (var i = 0; i < index.length; i++) {
           setStatus("loading", "Loading shared budget " + (i + 1) + " of " + index.length + "...", { user: userLabel(loadTokens()) });
-          var detail = await apiJson("/state?part=budget&id=" + encodeURIComponent(index[i].id));
-          if (detail && detail.budget) loaded.push(detail.budget);
+          try {
+            var detail = await apiJson("/state?part=budget&id=" + encodeURIComponent(index[i].id));
+            if (detail && detail.budget) {
+              var replaced = false;
+              loaded = loaded.map(function (b) {
+                if (b && b.id === detail.budget.id) { replaced = true; return detail.budget; }
+                return b;
+              });
+              if (!replaced) loaded.push(detail.budget);
+            }
+          } catch (e) {
+            failed++;
+            if (!loaded.some(function (b) { return b && b.id === index[i].id; })) loaded.push(index[i]);
+            console.warn("Could not load shared budget detail:", index[i].id, e);
+          }
         }
         state.budgets = loaded;
+        if (failed) {
+          setStatus("error", "Loaded " + loaded.length + " budget(s), but " + failed + " detail file(s) failed", { user: userLabel(loadTokens()) });
+          return state;
+        }
       }
       lastRemoteBudgetCount = state.budgets.length;
       lastRemoteWasEmpty = !!(data.remote && data.remote.empty);

@@ -25,7 +25,7 @@
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "auth-btn";
-    if (st.state === "signed_out" || st.state === "error") {
+    if (st.state === "signed_out" || (st.state === "error" && !st.user)) {
       btn.textContent = "Sign in";
       btn.addEventListener("click", function () { G.cloud.signIn(); });
       el.appendChild(btn);
