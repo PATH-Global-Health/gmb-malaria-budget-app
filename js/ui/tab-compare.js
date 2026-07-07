@@ -71,6 +71,34 @@ GMB.tabs = GMB.tabs || {};
         && cls.indexOf(r.cost_class) !== -1;
     });
   }
+  function filteredQuantityRows(b) {
+    var yrs = selYears(), ivs = sel(f.interventions);
+    return (b.quantityRows || []).filter(function (r) {
+      return (yrs.indexOf(r.year) !== -1 || yrs.indexOf(Number(r.year)) !== -1)
+        && ivs.indexOf(r.intervention_code) !== -1;
+    });
+  }
+  function qtyKey(r) {
+    return [r.intervention_code || "", r.type || "", r.commodity || "", r.age_band || "", r.quantity_basis || ""].join("|");
+  }
+  function qtyLabelFromKey(k) {
+    var p = String(k).split("|");
+    return { intervention: ivName(p[0]), type: p[1], commodity: p[2], age: p[3], basis: p[4] };
+  }
+  function quantityMaps(picked) {
+    var totals = {}, order = [], maps = picked.map(function (b) {
+      var m = {};
+      filteredQuantityRows(b).forEach(function (r) {
+        var k = qtyKey(r);
+        if (!(k in totals)) { totals[k] = 0; order.push(k); }
+        m[k] = (m[k] || 0) + (r.quantity || 0);
+        totals[k] += r.quantity || 0;
+      });
+      return m;
+    });
+    order.sort(function (a, b) { return totals[b] - totals[a]; });
+    return { order: order, maps: maps, totals: totals };
+  }
   function totalOf(b) { var vf = valField(); return filteredRows(b).reduce(function (a, r) { return a + (r[vf] || 0); }, 0); }
   function natAvgPop(b) {
     var g = scnGrowth(b), ys = selYears(); if (!ys.length) return 0;
@@ -144,6 +172,7 @@ GMB.tabs = GMB.tabs || {};
     if (warn) mainEl.appendChild(warn);
     mainEl.appendChild(renderScoreboard(picked));
     mainEl.appendChild(renderDeltaTable(picked));
+    mainEl.appendChild(renderQuantityDeltaTable(picked));
     mainEl.appendChild(el("div", { class: "cards-row two" }, [renderTotalsPlot(picked), renderCompositionPlot(picked)]));
   }
   function renderBody() {
@@ -239,6 +268,23 @@ GMB.tabs = GMB.tabs || {};
     sheets.push({ name: "Diagnostics", title: "Budget diagnostics",
       columns: [{ label: "Budget", width: 210 }, { label: "Diagnostic type", width: 170 }, { label: "Intervention", width: 140 }, { label: "Type", width: 130 }, { label: "Reason/detail", width: 180 }, { label: "Message", width: 340 }],
       rows: diagRows });
+    var qComp = quantityMaps(picked), qCols = [{ label: "Intervention", width: 170 }, { label: "Type", width: 130 }, { label: "Commodity", width: 170 }, { label: "Age band", width: 110 }, { label: "Quantity basis", width: 140 }, { label: shortName(base) + " qty", width: 120, fmt: "num1" }];
+    picked.slice(1).forEach(function (b) {
+      qCols.push({ label: shortName(b) + " qty", width: 120, fmt: "num1" });
+      qCols.push({ label: "Change vs baseline", width: 130, fmt: "num1" });
+      qCols.push({ label: "Change %", width: 90, fmt: "num1" });
+    });
+    sheets.push({ name: "Quantity changes", title: "Change in commodity requirements",
+      columns: qCols,
+      rows: qComp.order.map(function (k) {
+        var lab = qtyLabelFromKey(k), bv = qComp.maps[0][k] || 0;
+        var out = [lab.intervention, lab.type, lab.commodity, lab.age, lab.basis, Math.round(bv * 10) / 10];
+        picked.slice(1).forEach(function (b, ci) {
+          var cv = qComp.maps[ci + 1][k] || 0, d = cv - bv, pc = bv ? (d / bv * 100) : (cv ? 100 : 0);
+          out.push(Math.round(cv * 10) / 10, Math.round(d * 10) / 10, Math.round(pc * 10) / 10);
+        });
+        return out;
+      }) });
     var lineRows = [];
     picked.forEach(function (b) {
       filteredLineRows(b).forEach(function (r) {
@@ -269,6 +315,11 @@ GMB.tabs = GMB.tabs || {};
     sheets.push({ name: "Assumptions snapshot", title: "Scenario assumptions snapshot",
       columns: [{ label: "Budget", width: 210 }, { label: "Intervention", width: 180 }, { label: "Code", width: 80 }, { label: "Enabled", width: 80 }, { label: "Selected type", width: 130 }, { label: "Active years", width: 140 }, { label: "Coverage", width: 90, fmt: "num1" }, { label: "Cycles", width: 80, fmt: "num1" }, { label: "Buffer", width: 80, fmt: "num1" }],
       rows: assumptionRows });
+    var order = ["Summary", "Budget status", "Assumptions snapshot", "Diagnostics", "Quantity changes", "Line detail", "Top elements by budget", "By intervention", "By cost category", "By year", "By region"];
+    sheets.sort(function (a, b) {
+      var ai = order.indexOf(a.name), bi = order.indexOf(b.name);
+      return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
+    });
     GMB.xlsx.download("budget-comparison", sheets);
   }
 
@@ -330,6 +381,44 @@ GMB.tabs = GMB.tabs || {};
 
     var dl = el("button", { class: "linkbtn dl-btn", onClick: function () { exportCompareXlsx(picked); } }, ["⬇ Export to Excel"]);
     return card("Change vs baseline — by " + dimName.toLowerCase(), null, el("div", { class: "table-scroll" }, [t]), dl);
+  }
+
+  function renderQuantityDeltaTable(picked) {
+    var base = picked[0], comps = picked.slice(1), qm = quantityMaps(picked);
+    var head = [el("th", { text: "Intervention" }), el("th", { text: "Type" }), el("th", { text: "Commodity" }), el("th", { text: "Age / basis" }), el("th", { class: "num", text: shortName(base) + " qty" })];
+    comps.forEach(function (b) {
+      head.push(el("th", { class: "num", text: shortName(b) + " qty" }));
+      head.push(el("th", { class: "num", text: "Change" }));
+      head.push(el("th", { class: "num", text: "Change %" }));
+    });
+    var t = el("table", { class: "data-table cmp-delta" }, [el("tr", {}, head)]);
+    if (!qm.order.length) {
+      t.appendChild(el("tr", {}, [el("td", { colspan: String(5 + comps.length * 3), class: "muted", text: "No commodity quantities match the selected filters." })]));
+    }
+    qm.order.forEach(function (k) {
+      var lab = qtyLabelFromKey(k), bv = qm.maps[0][k] || 0;
+      var cells = [
+        el("td", { class: "rowlab", text: lab.intervention }),
+        el("td", { text: lab.type || "" }),
+        el("td", { text: lab.commodity || "" }),
+        el("td", { text: [lab.age, lab.basis].filter(Boolean).join(" · ") }),
+        el("td", { class: "num", text: U.fmtNum(bv) })
+      ];
+      comps.forEach(function (b, ci) {
+        var cv = qm.maps[ci + 1][k] || 0, d = cv - bv, pc = bv ? (d / bv * 100) : (cv ? 100 : 0);
+        var pill = Math.abs(d) < 0.5 ? el("span", { class: "delta-pill none", text: "–" })
+          : el("span", { class: "delta-pill " + (d > 0 ? "up" : "down"), text: (d > 0 ? "▲ +" : "▼ −") + U.fmtNum(Math.abs(d)) });
+        cells.push(el("td", { class: "num", text: U.fmtNum(cv) }));
+        cells.push(el("td", { class: "num" }, [pill]));
+        cells.push(el("td", { class: "num", text: bv || cv ? ((d > 0 ? "+" : "") + Math.round(pc * 10) / 10 + "%") : "" }));
+      });
+      t.appendChild(el("tr", {}, cells));
+    });
+    var dl = el("button", { class: "linkbtn dl-btn", onClick: function () { exportCompareXlsx(picked); } }, ["⬇ Export to Excel"]);
+    return card("Change in commodity requirements", null, el("div", {}, [
+      el("p", { class: "muted small", style: "margin-top:0", text: "Uses the selected years and interventions. Cost-category filters do not apply to commodity quantities." }),
+      el("div", { class: "table-scroll" }, [t])
+    ]), dl);
   }
 
   G.tabs.compare = { render: render };

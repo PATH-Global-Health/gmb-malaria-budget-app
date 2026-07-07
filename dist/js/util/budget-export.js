@@ -236,6 +236,11 @@ window.GMB = window.GMB || {};
       rows: exRows.map(function (r) { return [ivName(r.intervention_code), r.type || "", r.commodity || "", rd(r.target_pop), rd(r.covered_pop), Math.round((r.quantity || 0) * 10) / 10, r.description || "", r.unit || "", Math.round((r.quantity_for_cost || 0) * 10) / 10, Math.round((r.unit_cost_usd || 0) * 100) / 100, className(r.cost_class), rd(r.cost_usd)]; }),
       totalRow: ["TOTAL", "", "", "", "", "", "", "", "", "", "", rd(exRows.reduce(function (a, r) { return a + (r.cost_usd || 0); }, 0))] });
 
+    var order = ["Summary", "Source status", "Assumptions snapshot", "Diagnostics", "Quantities", "Cost detail", "Cost set audit", "Top cost elements", "By intervention", "By cost category", "By year", "By region", "By district", "Worked example"];
+    sheets.sort(function (a, b) {
+      var ai = order.indexOf(a.name), bi = order.indexOf(b.name);
+      return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
+    });
     return sheets;
   };
 })(GMB);
