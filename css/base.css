@@ -351,8 +351,9 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 .plot-modal-body .gmb-leaflet-host { height: 70vh; min-height: 420px; }
 .leaflet-container { font: inherit; background: #eef2f7; }
 .leaflet-map-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; align-items: start; padding: 8px 10px; background: #fff; border-top: 1px solid var(--line); font-size: .82rem; }
-.leaflet-map-legend-item { display: inline-flex; align-items: flex-start; gap: 6px; min-width: 0; }
+.leaflet-map-legend-item { display: grid; grid-template-columns: 14px minmax(0, 1fr); align-items: flex-start; gap: 6px; min-width: 0; width: 100%; line-height: 1.25; }
 .leaflet-map-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.08); display: inline-block; flex: 0 0 14px; margin-top: 2px; }
+.leaflet-map-legend-text { min-width: 0; overflow-wrap: anywhere; }
 .leaflet-map-legend-label { grid-column: 1 / -1; color: var(--muted); font-weight: 600; }
 .leaflet-map-gradient { grid-column: 1 / -1; height: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 999px; }
 .leaflet-map-scale { grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; }

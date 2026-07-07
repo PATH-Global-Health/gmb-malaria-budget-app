@@ -331,7 +331,8 @@ GMB.charts = GMB.charts || {};
         (spec.items || []).forEach(function (it) {
           var item = document.createElement("span"); item.className = "leaflet-map-legend-item";
           var sw = document.createElement("span"); sw.className = "leaflet-map-swatch"; sw.style.background = it.color || "#ccc";
-          item.appendChild(sw); item.appendChild(document.createTextNode(it.label || ""));
+          var txt = document.createElement("span"); txt.className = "leaflet-map-legend-text"; txt.textContent = it.label || "";
+          item.appendChild(sw); item.appendChild(txt);
           leg.appendChild(item);
         });
       }
