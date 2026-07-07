@@ -350,12 +350,12 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 .small-map .gmb-leaflet-host { height: 170px; min-height: 150px; }
 .plot-modal-body .gmb-leaflet-host { height: 70vh; min-height: 420px; }
 .leaflet-container { font: inherit; background: #eef2f7; }
-.leaflet-map-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 10px; background: #fff; border-top: 1px solid var(--line); font-size: .82rem; }
-.leaflet-map-legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.leaflet-map-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.08); display: inline-block; }
-.leaflet-map-legend-label { flex: 0 0 100%; color: var(--muted); font-weight: 600; }
-.leaflet-map-gradient { height: 12px; min-width: 220px; flex: 1 1 260px; border: 1px solid var(--line); border-radius: 999px; }
-.leaflet-map-scale { flex: 0 0 100%; display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; }
+.leaflet-map-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; align-items: start; padding: 8px 10px; background: #fff; border-top: 1px solid var(--line); font-size: .82rem; }
+.leaflet-map-legend-item { display: inline-flex; align-items: flex-start; gap: 6px; min-width: 0; }
+.leaflet-map-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.08); display: inline-block; flex: 0 0 14px; margin-top: 2px; }
+.leaflet-map-legend-label { grid-column: 1 / -1; color: var(--muted); font-weight: 600; }
+.leaflet-map-gradient { grid-column: 1 / -1; height: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 999px; }
+.leaflet-map-scale { grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; }
 .gmb-map-dist { transition: fill .12s, fill-opacity .12s; }
 .gmb-map-dist:hover { fill-opacity: .75; }
 
@@ -454,8 +454,10 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 .spec-foot .info { vertical-align: baseline; }
 
 /* Intervention map viewer */
-.viewer-legend { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; }
-.viewer-legend .row { display: flex; gap: 6px; align-items: center; font-size: .8rem; }
+.viewer-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; row-gap: 6px; margin: 8px 0; }
+.viewer-legend .row { display: flex; gap: 6px; align-items: flex-start; min-width: 0; font-size: .8rem; line-height: 1.25; }
+.viewer-legend .row .swatch { flex: 0 0 14px; margin-top: 2px; }
+.viewer-legend .row span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .viewer-multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 6px; }
 .viewer-cell { border: 1px solid var(--line); border-radius: 8px; padding: 6px; background: #fbfcfe; }
 .vc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -503,8 +505,8 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 }
 
 /* Year roll-up legend */
-.year-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; font-size: .8rem; }
-.year-legend .row { display: flex; gap: 5px; align-items: center; }
+.year-legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 12px; margin: 8px 0; font-size: .8rem; }
+.year-legend .row { display: flex; gap: 5px; align-items: center; min-width: 0; }
 
 /* Budget generation tab */
 .gen-pickers { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-top: 8px; }
@@ -643,6 +645,7 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 /* Maps grid — 2 columns (2×2) */
 .maps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 760px) { .maps-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .leaflet-map-legend, .viewer-legend, .year-legend { grid-template-columns: 1fr; } }
 .ramp-bar.ylord { background: linear-gradient(to right, #ffffb2, #fed976, #feb24c, #fd8d3c, #f03b20, #bd0026); }
 
 /* Cost table expand */
