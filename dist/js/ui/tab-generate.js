@@ -120,6 +120,40 @@ GMB.tabs = GMB.tabs || {};
     setTimeout(function () { highlightRow(nb.id); }, 30);
   }
 
+  function regenerateAllBudgets() {
+    var list = budgets().slice();
+    var runnable = list.filter(function (b) { return statusOf(b).state !== "deleted"; });
+    var skipped = list.length - runnable.length;
+    if (!runnable.length) {
+      flash = { msg: "No budgets can be regenerated because their source scenario or cost set is missing.", notes: [], type: "warn" };
+      refresh();
+      return;
+    }
+    var msg = "Regenerate " + runnable.length + " budget" + (runnable.length === 1 ? "" : "s") + " in the library? This will replace each budget with a fresh calculation using its current scenario and cost set.";
+    if (skipped) msg += " " + skipped + " budget" + (skipped === 1 ? "" : "s") + " with deleted sources will be skipped.";
+    if (!window.confirm(msg)) return;
+
+    var refreshed = 0, errors = 0, notes = [];
+    runnable.forEach(function (b) {
+      var st = statusOf(b);
+      try {
+        var nb = generateInto(st.scn, st.cost, b.id, null);
+        refreshed++;
+        (nb.notes || []).forEach(function (n) { notes.push((nb.name || b.name || b.id) + ": " + n); });
+      } catch (e) {
+        errors++;
+        notes.push((b.name || b.id) + ": regeneration failed (" + (e && e.message ? e.message : e) + ")");
+      }
+    });
+    var parts = ["Regenerated " + refreshed + " budget" + (refreshed === 1 ? "" : "s")];
+    if (skipped) parts.push("skipped " + skipped + " source-deleted budget" + (skipped === 1 ? "" : "s"));
+    if (errors) parts.push(errors + " error" + (errors === 1 ? "" : "s"));
+    if (notes.length) parts.push(notes.length + " warning" + (notes.length === 1 ? "" : "s"));
+    flash = { msg: parts.join(" · "), notes: notes.slice(0, 20), type: (errors || notes.length || skipped) ? "warn" : "ok" };
+    if (notes.length > 20) flash.notes.push("+" + (notes.length - 20) + " more warning(s).");
+    refresh();
+  }
+
   // ---- queue ------------------------------------------------------------
   function addToQueue() {
     var scn = scnById(selScn), cost = costById(selCost);
@@ -299,9 +333,11 @@ GMB.tabs = GMB.tabs || {};
 
     var nSel = Object.keys(compareSel).filter(function (k) { return compareSel[k]; }).length;
     var canCompare = nSel >= 2;
+    var canRegenAll = list.some(function (b) { return statusOf(b).state !== "deleted"; });
     p.appendChild(el("div", { class: "lib-bar" }, [
       el("span", { class: "small muted", text: nSel ? (nSel + " selected") : "Tick two or more budgets to compare" }),
-      el("button", { class: "btn secondary", disabled: canCompare ? null : "disabled", onClick: compareSelected }, ["Compare selected →"])
+      el("button", { class: "btn secondary", disabled: canCompare ? null : "disabled", onClick: compareSelected }, ["Compare selected →"]),
+      el("button", { class: "btn secondary", disabled: canRegenAll ? null : "disabled", title: "Refresh every budget whose scenario and cost set still exist", onClick: regenerateAllBudgets }, ["Regenerate all"])
     ]));
 
     var tbl = el("table", { class: "gen-table lib-table" }, [
