@@ -12,6 +12,7 @@ GMB.tabs = GMB.tabs || {};
   var BRIGHT = ["#4363d8", "#3cb44b", "#f58231", "#e6194B", "#911eb4", "#f032e6", "#42d4f4", "#bfef45", "#9A6324", "#800000", "#808000", "#000075"];
   var YEAR_PALETTE = ["#4363d8", "#3cb44b", "#f58231", "#e6194B", "#42d4f4", "#911eb4"];
   var ALL_COLOR = "#0c4a9e", MULTI_COLOR = "#9A6324", OFF_COLOR = "#dfe5ee", NONE_COLOR = "#f3f5f8";
+  var TARGET_COLORS = { base: "#8FFAA6", added: "#0075A2", excluded: "#481620", none: "#eef0f4", selected: "#F5C542" };
   var SHORT = { mii: "Mass ITN", mii_routine: "Routine ITN", irs: "IRS", smc: "SMC", iptsc: "IPTsc", vax: "Vaccine", iptp: "IPTp" };
   var COV_BASED = ["mii", "mii_routine", "irs", "smc", "iptsc"];
 
@@ -198,10 +199,30 @@ GMB.tabs = GMB.tabs || {};
   function isActive(iv, key, year) { return activeYearsFor(iv, key).indexOf(year) !== -1; }
   function geoOverrideCount(iv) { return Object.keys(iv.geo || {}).filter(function (k) { var g = iv.geo[k]; return g && (g.years || g.coverage != null || g.targetPct != null || g.type); }).length; }
   function cloneScope(scope) { return JSON.parse(JSON.stringify(scope || { mode: "everywhere" })); }
-  function scopeBase(scope) { var s = cloneScope(scope); delete s.exclude; return s; }
-  function resolvedTargetKeys(iv, assignment, includeExcluded) {
-    return G.resolveScope(includeExcluded ? scopeBase(iv.scope) : iv.scope, assignment.result);
+  function scopeBase(scope) {
+    var s = cloneScope(scope);
+    delete s.exclude; delete s.includeRegions; delete s.includeDistricts;
+    return s;
   }
+  function scopeWithAdds(scope) { var s = cloneScope(scope); delete s.exclude; return s; }
+  function scopeManual(scope) {
+    return {
+      exclude: (scope && scope.exclude || []).slice(),
+      includeRegions: (scope && scope.includeRegions || []).slice(),
+      includeDistricts: (scope && scope.includeDistricts || []).slice()
+    };
+  }
+  function applyManual(scope, manual) {
+    var out = cloneScope(scope);
+    out.exclude = (manual && manual.exclude || []).slice();
+    out.includeRegions = (manual && manual.includeRegions || []).slice();
+    out.includeDistricts = (manual && manual.includeDistricts || []).slice();
+    return out;
+  }
+  function resolvedTargetKeys(iv, assignment, includeExcluded) {
+    return G.resolveScope(includeExcluded ? scopeWithAdds(iv.scope) : iv.scope, assignment.result);
+  }
+  function baseTargetKeys(iv, assignment) { return G.resolveScope(scopeBase(iv.scope), assignment.result); }
   function coveredKeys(scn, assignment) {
     var set = {};
     G.catalog.forEach(function (c) { var iv = scn.interventions[c.code]; if (iv && iv.enabled) Object.keys(resolvedTargetKeys(iv, assignment)).forEach(function (k) { set[k] = true; }); });
@@ -370,27 +391,43 @@ GMB.tabs = GMB.tabs || {};
   function renderMix(assignment) {
     var bands = assignment.bands, p = el("div", { class: "panel" });
     p.appendChild(el("div", { class: "scn-h" }, [el("span", { class: "scn-step", text: "3" }), "Intervention mix by stratum"]));
-    p.appendChild(el("p", { class: "muted small", text: "Turn interventions on and choose which strata each runs in. Set details in step 5." }));
+    p.appendChild(el("p", { class: "muted small", text: "Turn interventions on and choose the base strata. Use Edit targeting for manual district or region inclusions/exclusions." }));
     var table = el("table", { class: "iv-table" });
     table.appendChild(el("tr", {}, [el("th", { text: "Intervention" }), el("th", { text: "On" }), el("th", { text: "All" })]
-      .concat(bands.map(function (b) { return el("th", { text: b.name.replace("Strata ", "S ") }); })).concat([el("th", { text: "Distr." })])));
+      .concat(bands.map(function (b) { return el("th", { text: b.name.replace("Strata ", "S ") }); }))
+      .concat([el("th", { text: "Base" }), el("th", { text: "Manual" }), el("th", { text: "Final" })])));
+    function baseLabel(sc) {
+      if (!sc || sc.mode === "everywhere") return "All districts";
+      if (sc.mode === "custom") return "Custom base";
+      var names = bands.filter(function (b) { return (sc.strata || []).indexOf(b.id) !== -1; }).map(function (b) { return b.name.replace("Strata ", "S "); });
+      return names.length ? names.join(", ") : "No strata";
+    }
+    function manualLabel(iv, assignment) {
+      var sc = iv.scope || {}, base = baseTargetKeys(iv, assignment), withAdds = resolvedTargetKeys(iv, assignment, true);
+      var added = Object.keys(withAdds).filter(function (k) { return !base[k]; }).length;
+      var excluded = (sc.exclude || []).filter(function (k) { return withAdds[k]; }).length;
+      if (!added && !excluded) return "None";
+      return (added ? "+" + added + " added" : "") + (added && excluded ? ", " : "") + (excluded ? "-" + excluded + " excluded" : "");
+    }
     G.catalog.forEach(function (c) {
       var iv = current.interventions[c.code], sc = iv.scope, isEvery = sc.mode === "everywhere", isStrata = sc.mode === "strata";
       var nDist = iv.enabled ? Object.keys(resolvedTargetKeys(iv, assignment)).length : 0;
       var cells = [el("td", { class: "iv-name", text: c.nice }),
         el("td", {}, [chk(iv.enabled, function (v) { iv.enabled = v; refresh(); })]),
-        el("td", {}, [chk(isEvery, function (v) { iv.scope = v ? { mode: "everywhere" } : { mode: "strata", strata: bands.map(function (b) { return b.id; }) }; refresh(); }, !iv.enabled)])];
+        el("td", {}, [chk(isEvery, function (v) { var m = scopeManual(sc); iv.scope = applyManual(v ? { mode: "everywhere" } : { mode: "strata", strata: bands.map(function (b) { return b.id; }) }, m); refresh(); }, !iv.enabled)])];
       bands.forEach(function (b) {
         var on = isEvery || (isStrata && sc.strata.indexOf(b.id) !== -1);
         cells.push(el("td", {}, [chk(on, function (v) {
           var set = isStrata ? sc.strata.slice() : (isEvery ? bands.map(function (x) { return x.id; }) : []);
           var i = set.indexOf(b.id); if (v && i === -1) set.push(b.id); if (!v && i !== -1) set.splice(i, 1);
-          iv.scope = { mode: "strata", strata: set, exclude: sc.exclude }; refresh();
+          iv.scope = applyManual({ mode: "strata", strata: set }, scopeManual(sc)); refresh();
         }, !iv.enabled || isEvery)]));
       });
+      cells.push(el("td", { class: "small muted", text: baseLabel(sc) }));
+      cells.push(el("td", { class: "small", text: manualLabel(iv, assignment) }));
       cells.push(el("td", { class: "iv-dist" }, [
-        el("span", { text: (sc.mode === "custom" ? "cust " : "") + String(nDist) + " " }),
-        el("button", { class: "linkbtn tiny", onClick: function () { openTargetingModal(c, iv); } }, ["Edit"])
+        el("span", { text: String(nDist) + " / 42 " }),
+        el("button", { class: "linkbtn tiny", onClick: function () { openTargetingModal(c, iv); } }, ["Edit targeting"])
       ]));
       table.appendChild(el("tr", { class: iv.enabled ? "" : "iv-off" }, cells));
     });
@@ -703,24 +740,58 @@ GMB.tabs = GMB.tabs || {};
   function districtKey(d) { return d.adm1 + "|" + d.adm2; }
   function districtLabel(k) { var p = k.split("|"); return p[1] + " (" + p[0] + ")"; }
   function allDistrictKeys() { return G.reference.districtPairs().map(districtKey).sort(); }
+  function regionDistrictKeys(region) { return allDistrictKeys().filter(function (k) { return k.split("|")[0] === region; }); }
+  function addUnique(arr, value) { arr = arr || []; if (arr.indexOf(value) === -1) arr.push(value); return arr; }
+  function removeValue(arr, value) { return (arr || []).filter(function (x) { return x !== value; }); }
+  function removeMany(arr, values) { var set = {}; values.forEach(function (v) { set[v] = true; }); return (arr || []).filter(function (x) { return !set[x]; }); }
   function openTargetingModal(c, iv) {
-    var assignment = computeAssignment(current), holder = el("div", {}), ctl;
+    var assignment = computeAssignment(current), holder = el("div", {}), ctl, selectedKey = null, showExcluded = false;
     if (!iv.scope) iv.scope = { mode: "strata", strata: assignment.bands.map(function (b) { return b.id; }) };
     if (!iv.scope.exclude) iv.scope.exclude = [];
+    if (!iv.scope.includeRegions) iv.scope.includeRegions = [];
+    if (!iv.scope.includeDistricts) iv.scope.includeDistricts = [];
+    function clearDistrict(k) {
+      iv.scope.includeDistricts = removeValue(iv.scope.includeDistricts, k);
+      iv.scope.exclude = removeValue(iv.scope.exclude, k);
+    }
+    function includeDistrict(k) {
+      iv.scope.includeDistricts = addUnique(removeValue(iv.scope.includeDistricts, k), k);
+      iv.scope.exclude = removeValue(iv.scope.exclude, k);
+    }
+    function excludeDistrict(k) {
+      iv.scope.exclude = addUnique(removeValue(iv.scope.exclude, k), k);
+      iv.scope.includeDistricts = removeValue(iv.scope.includeDistricts, k);
+    }
+    function includeRegion(region) {
+      iv.scope.includeRegions = addUnique(removeValue(iv.scope.includeRegions, region), region);
+      iv.scope.exclude = removeMany(iv.scope.exclude, regionDistrictKeys(region));
+    }
+    function excludeRegion(region) {
+      var ks = regionDistrictKeys(region);
+      ks.forEach(function (k) { iv.scope.exclude = addUnique(iv.scope.exclude, k); });
+      iv.scope.includeRegions = removeValue(iv.scope.includeRegions, region);
+      iv.scope.includeDistricts = removeMany(iv.scope.includeDistricts, ks);
+    }
+    function clearRegion(region) {
+      iv.scope.includeRegions = removeValue(iv.scope.includeRegions, region);
+      iv.scope.exclude = removeMany(iv.scope.exclude, regionDistrictKeys(region));
+    }
     function rebuild() {
       assignment = computeAssignment(current);
       holder.innerHTML = "";
-      var scope = iv.scope, base = resolvedTargetKeys(iv, assignment, true), covered = resolvedTargetKeys(iv, assignment, false);
-      var excluded = (scope.exclude || []).filter(function (k) { return base[k]; }).sort();
+      var scope = iv.scope, base = baseTargetKeys(iv, assignment), withAdds = resolvedTargetKeys(iv, assignment, true), covered = resolvedTargetKeys(iv, assignment, false);
+      var added = Object.keys(withAdds).filter(function (k) { return !base[k]; }).sort();
+      var excluded = (scope.exclude || []).filter(function (k) { return withAdds[k]; }).sort();
       holder.appendChild(el("div", { class: "settings-line wrap" }, [
-        el("span", { class: "small muted", text: "Targeting mode" }),
+        el("span", { class: "small muted", text: "Base targeting rule" }),
         selEl([{ value: "everywhere", label: "All districts" }, { value: "strata", label: "By strata" }, { value: "custom", label: "Custom regions/districts" }], scope.mode || "strata", function (v) {
-          if (v === "everywhere") iv.scope = { mode: "everywhere", exclude: scope.exclude || [] };
-          else if (v === "strata") iv.scope = { mode: "strata", strata: scope.strata && scope.strata.length ? scope.strata.slice() : assignment.bands.map(function (b) { return b.id; }), exclude: scope.exclude || [] };
-          else iv.scope = { mode: "custom", regions: scope.regions || [], districts: scope.districts || [], exclude: scope.exclude || [] };
+          var m = scopeManual(scope);
+          if (v === "everywhere") iv.scope = applyManual({ mode: "everywhere" }, m);
+          else if (v === "strata") iv.scope = applyManual({ mode: "strata", strata: scope.strata && scope.strata.length ? scope.strata.slice() : assignment.bands.map(function (b) { return b.id; }) }, m);
+          else iv.scope = applyManual({ mode: "custom", regions: scope.regions || [], districts: scope.districts || [] }, m);
           rebuild();
         }),
-        info("Choose the base targeting rule, then optionally exclude specific districts. Excluded districts are not quantified or costed for this intervention.")
+        info("Choose the base rule first. Manual additions and exclusions are layered on top without changing that base rule.")
       ]));
       if (scope.mode === "strata") {
         holder.appendChild(el("div", { class: "settings-line wrap" }, [el("span", { class: "small muted", text: "Strata" })].concat(assignment.bands.map(function (b) {
@@ -745,23 +816,78 @@ GMB.tabs = GMB.tabs || {};
           selEl([{ value: "", label: "+ add district..." }].concat(dists.map(function (k) { return { value: k, label: districtLabel(k) }; })), "", function (v) { if (v) { (iv.scope.districts = iv.scope.districts || []).push(v); rebuild(); } })
         ]));
       }
-      var addable = Object.keys(base).filter(function (k) { return excluded.indexOf(k) === -1; }).sort();
+      holder.appendChild(el("div", { class: "callout note" }, [
+        el("div", { class: "callout-title", text: "Manual targeting changes" }),
+        el("p", { class: "callout-text", text: "Use this only when the final targeted districts differ from the base rule. You can add or exclude a whole region, or select one district on the map and choose an action." })
+      ]));
+      var regions = G.reference.regions().sort();
       holder.appendChild(el("div", { class: "settings-line wrap" }, [
-        el("span", { class: "small muted", text: "Excluded districts" }),
-        el("span", { class: "chip-row small" }, excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = (scope.exclude || []).filter(function (x) { return x !== k; }); rebuild(); } })]); })),
-        selEl([{ value: "", label: "+ exclude district..." }].concat(addable.map(function (k) { return { value: k, label: districtLabel(k) }; })), "", function (v) { if (v) { (iv.scope.exclude = iv.scope.exclude || []).push(v); rebuild(); } })
+        el("span", { class: "small muted", text: "Region action" }),
+        selEl([{ value: "", label: "+ include full region..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { includeRegion(v); rebuild(); } }),
+        selEl([{ value: "", label: "- exclude full region..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { excludeRegion(v); rebuild(); } }),
+        selEl([{ value: "", label: "clear region manual changes..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { clearRegion(v); rebuild(); } })
+      ]));
+      var additionChips = (scope.includeRegions || []).map(function (r) {
+        return el("span", { class: "chip removable" }, [r, el("span", { class: "x", text: " x", onClick: function () { iv.scope.includeRegions = removeValue(scope.includeRegions, r); rebuild(); } })]);
+      }).concat((scope.includeDistricts || []).map(function (k) {
+        return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.includeDistricts = removeValue(scope.includeDistricts, k); rebuild(); } })]);
+      }));
+      holder.appendChild(el("div", { class: "settings-line wrap" }, [
+        el("span", { class: "small muted", text: "Manual additions" }),
+        el("span", { class: "chip-row small" }, additionChips.length ? additionChips : ["None"])
+      ]));
+      holder.appendChild(el("div", { class: "settings-line wrap" }, [
+        el("span", { class: "small muted", text: "Manual exclusions" }),
+        el("span", { class: "chip-row small" }, excluded.length ? excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = removeValue(scope.exclude, k); rebuild(); } })]); }) : ["None"])
+      ]));
+      var map = G.ui.gambiaMap({ onClick: function (k) { selectedKey = k; rebuild(); } });
+      map.setColors(function (k) {
+        if (withAdds[k] && !covered[k]) return TARGET_COLORS.excluded;
+        if (withAdds[k] && !base[k]) return TARGET_COLORS.added;
+        if (base[k]) return TARGET_COLORS.base;
+        return TARGET_COLORS.none;
+      });
+      map.setOutline(function (k) { return k === selectedKey; });
+      map.setStroke(function (k) { return k === selectedKey ? TARGET_COLORS.selected : ""; });
+      map.setTitles(function (k, pr) {
+        var status = withAdds[k] && !covered[k] ? "manually excluded" : withAdds[k] && !base[k] ? "manually added" : base[k] ? "targeted by base rule" : "not targeted";
+        return pr.adm2 + " (" + pr.adm1 + ") - " + status;
+      });
+      var selected = selectedKey ? districtLabel(selectedKey) : "Click a district on the map";
+      holder.appendChild(el("div", { class: "targeting-modal-grid" }, [
+        el("div", {}, [
+          el("div", { class: "map-toolbar" }, [
+            el("div", { class: "chip-row small" }, [
+              el("span", {}, [el("span", { class: "swatch", style: "background:" + TARGET_COLORS.base }), " targeted by base rule"]),
+              el("span", {}, [el("span", { class: "swatch", style: "background:" + TARGET_COLORS.added }), " manually added"]),
+              el("span", {}, [el("span", { class: "swatch", style: "background:" + TARGET_COLORS.excluded }), " manually excluded"]),
+              el("span", {}, [el("span", { class: "swatch", style: "background:" + TARGET_COLORS.none }), " not targeted"])
+            ])
+          ]),
+          el("div", { class: "map-wrap targeting-map" }, [map.el])
+        ]),
+        el("div", { class: "targeting-actions" }, [
+          el("div", { class: "callout info" }, [
+            el("div", { class: "callout-title", text: "Selected district" }),
+            el("p", { class: "callout-text", text: selected })
+          ]),
+          el("button", { class: "btn", disabled: !selectedKey, onClick: function () { includeDistrict(selectedKey); rebuild(); } }, ["Include selected district"]),
+          el("button", { class: "btn secondary", disabled: !selectedKey, onClick: function () { excludeDistrict(selectedKey); rebuild(); } }, ["Exclude selected district"]),
+          el("button", { class: "linkbtn", disabled: !selectedKey, onClick: function () { clearDistrict(selectedKey); rebuild(); } }, ["Clear selected district change"]),
+          el("div", { class: "small muted", text: "District actions are deliberate: click a district first, then choose include, exclude, or clear." })
+        ])
       ]));
       holder.appendChild(el("div", { class: "callout note" }, [
         el("div", { class: "callout-title", text: "Targeting summary" }),
-        el("p", { class: "callout-text", text: Object.keys(covered).length + " districts included; " + excluded.length + " excluded from " + Object.keys(base).length + " base-targeted districts." })
+        el("p", { class: "callout-text", text: Object.keys(base).length + " base-targeted; " + added.length + " manually added; " + excluded.length + " manually excluded; " + Object.keys(covered).length + " final targeted districts." })
       ]));
     }
     rebuild();
     ctl = G.ui.openModal({
-      title: c.nice + " - targeting and exclusions",
+      title: c.nice + " - targeting override",
       body: holder,
       footer: [
-        el("button", { class: "linkbtn", onClick: function () { iv.scope.exclude = []; rebuild(); } }, ["Clear exclusions"]),
+        el("button", { class: "linkbtn", onClick: function () { iv.scope.exclude = []; iv.scope.includeRegions = []; iv.scope.includeDistricts = []; selectedKey = null; rebuild(); } }, ["Clear manual changes"]),
         el("button", { class: "btn", onClick: function () { ctl.close(); } }, ["Done"])
       ],
       onClose: function () { refresh(); }
@@ -771,26 +897,25 @@ GMB.tabs = GMB.tabs || {};
   // ---- Set-by-geography modal ----
   function openGeoModal(c, iv) {
     var assignment = computeAssignment(current);
-    var covered = resolvedTargetKeys(iv, assignment);
-    var keys = Object.keys(covered).sort();
     var covBased = COV_BASED.indexOf(c.code) !== -1;
     var propBased = iv.target && iv.target.mode === "groups";
     var typeBased = !!c.varyType;
     var defCov = iv.params.coverage, defTarget = Math.round(groupSum(iv) * 100) / 100;
-    var byRegion = {};
-    keys.forEach(function (k) { var r = k.split("|")[0]; (byRegion[r] = byRegion[r] || []).push(k); });
-    var holder = el("div", {}), modalCtl, filterText = "";
+    var byRegion = {}, editableByRegion = {};
+    var holder = el("div", {}), modalCtl, filterText = "", showExcluded = false;
     function typeOptions(withInherit) { return (withInherit ? [{ value: "", label: "(inherit)" }] : [{ value: "", label: "- set all -" }]).concat(c.types.map(function (tp) { return { value: tp, label: tp }; })); }
-    function cascadeType(region, type) { byRegion[region].forEach(function (k) { ensureGeo(iv, k).type = type; }); rebuild(); }
+    function cascadeType(region, type) { (editableByRegion[region] || []).forEach(function (k) { ensureGeo(iv, k).type = type; }); rebuild(); }
 
     function regionCommonYears(region) {
-      var ks = byRegion[region], first = activeYearsFor(iv, ks[0]).slice().sort(function (a, b) { return a - b; });
+      var ks = editableByRegion[region] || [];
+      if (!ks.length) return iv.activeYears.slice();
+      var first = activeYearsFor(iv, ks[0]).slice().sort(function (a, b) { return a - b; });
       var common = ks.every(function (k) { var ys = activeYearsFor(iv, k).slice().sort(function (a, b) { return a - b; }); return ys.length === first.length && ys.every(function (y, i) { return y === first[i]; }); });
       return common ? first : iv.activeYears.slice();
     }
-    function cascadeYears(region, years) { byRegion[region].forEach(function (k) { ensureGeo(iv, k).years = years.slice(); }); rebuild(); }
-    function cascadeCoverage(region, frac) { byRegion[region].forEach(function (k) { var g = ensureGeo(iv, k); if (frac == null) { delete g.coverage; cleanGeo(iv, k); } else g.coverage = frac; }); rebuild(); }
-    function cascadeTarget(region, pct) { byRegion[region].forEach(function (k) { var g = ensureGeo(iv, k); if (pct == null) { delete g.targetPct; cleanGeo(iv, k); } else g.targetPct = pct; }); rebuild(); }
+    function cascadeYears(region, years) { (editableByRegion[region] || []).forEach(function (k) { ensureGeo(iv, k).years = years.slice(); }); rebuild(); }
+    function cascadeCoverage(region, frac) { (editableByRegion[region] || []).forEach(function (k) { var g = ensureGeo(iv, k); if (frac == null) { delete g.coverage; cleanGeo(iv, k); } else g.coverage = frac; }); rebuild(); }
+    function cascadeTarget(region, pct) { (editableByRegion[region] || []).forEach(function (k) { var g = ensureGeo(iv, k); if (pct == null) { delete g.targetPct; cleanGeo(iv, k); } else g.targetPct = pct; }); rebuild(); }
 
     function districtYearChips(k) {
       return el("span", { class: "chip-row" }, current.years.map(function (y) {
@@ -811,6 +936,19 @@ GMB.tabs = GMB.tabs || {};
     }
 
     function buildTable() {
+      assignment = computeAssignment(current);
+      var covered = resolvedTargetKeys(iv, assignment);
+      var withAdds = resolvedTargetKeys(iv, assignment, true);
+      var visibleKeys = Object.keys(covered).sort();
+      var excludedKeys = Object.keys(withAdds).filter(function (k) { return !covered[k]; }).sort();
+      if (showExcluded) visibleKeys = visibleKeys.concat(excludedKeys);
+      byRegion = {}; editableByRegion = {};
+      visibleKeys.forEach(function (k) { var r = k.split("|")[0]; (byRegion[r] = byRegion[r] || []).push(k); if (covered[k]) (editableByRegion[r] = editableByRegion[r] || []).push(k); });
+      holder.appendChild(el("div", { class: "settings-line wrap" }, [
+        el("span", { class: "small muted", text: Object.keys(covered).length + " targeted districts shown for editing" }),
+        excludedKeys.length ? el("label", { class: "small inline-toggle" }, [chk(showExcluded, function (v) { showExcluded = v; rebuild(); }), " show " + excludedKeys.length + " excluded district" + (excludedKeys.length > 1 ? "s" : "")]) : null,
+        el("button", { class: "linkbtn tiny", onClick: function () { if (modalCtl) modalCtl.close(); openTargetingModal(c, iv); } }, ["Edit targeting"])
+      ]));
       var table = el("table", { class: "geo-table" });
       var head = [el("th", { text: "Area" }), el("th", { text: "Stratum" }), el("th", { text: "Active years" })];
       if (typeBased) head.push(el("th", { text: c.typeLabel || "Type" }));
@@ -820,14 +958,23 @@ GMB.tabs = GMB.tabs || {};
       Object.keys(byRegion).sort().forEach(function (region) {
         var districts = byRegion[region].filter(function (k) { return !filterText || k.split("|")[1].toLowerCase().indexOf(filterText) !== -1; });
         if (!districts.length) return;
-        var rcells = [el("td", {}, [el("strong", { text: region })]), el("td", { class: "muted small", text: "all districts" }), el("td", {}, [regionYearChips(region)])];
-        if (typeBased) rcells.push(el("td", {}, [selEl(typeOptions(false), "", function (v) { if (v) cascadeType(region, v); })]));
-        if (covBased) rcells.push(el("td", {}, [numEl(null, function (v) { cascadeCoverage(region, v == null ? null : v / 100); }, { min: 0, max: 100, step: 1, width: "60px", placeholder: "set all" })]));
-        if (propBased) rcells.push(el("td", {}, [numEl(null, function (v) { cascadeTarget(region, v); }, { min: 0, max: 100, step: 0.1, width: "60px", placeholder: "set all" })]));
+        var editableCount = (editableByRegion[region] || []).length;
+        var rcells = [el("td", {}, [el("strong", { text: region })]), el("td", { class: "muted small", text: editableCount + " targeted district" + (editableCount === 1 ? "" : "s") }), el("td", {}, [editableCount ? regionYearChips(region) : el("span", { class: "muted small", text: "No targeted districts" })])];
+        if (typeBased) rcells.push(el("td", {}, editableCount ? [selEl(typeOptions(false), "", function (v) { if (v) cascadeType(region, v); })] : []));
+        if (covBased) rcells.push(el("td", {}, editableCount ? [numEl(null, function (v) { cascadeCoverage(region, v == null ? null : v / 100); }, { min: 0, max: 100, step: 1, width: "60px", placeholder: "set all" })] : []));
+        if (propBased) rcells.push(el("td", {}, editableCount ? [numEl(null, function (v) { cascadeTarget(region, v); }, { min: 0, max: 100, step: 0.1, width: "60px", placeholder: "set all" })] : []));
         table.appendChild(el("tr", { class: "geo-region-row" }, rcells));
         districts.forEach(function (k) {
           var bandId = assignment.result.byDistrict[k], band = assignment.bands.filter(function (b) { return b.id === bandId; })[0];
-          var row = [el("td", { text: k.split("|")[1] }), el("td", {}, [el("span", { class: "swatch", style: "background:" + (band ? band.color : "#ccc") }), " " + (band ? band.name : "")]), el("td", {}, [districtYearChips(k)])];
+          var excluded = !covered[k];
+          var row = [el("td", { text: k.split("|")[1] }), el("td", {}, [el("span", { class: "swatch", style: "background:" + (band ? band.color : "#ccc") }), " " + (band ? band.name : "")]), el("td", {}, excluded ? [el("span", { class: "muted small", text: "Excluded in targeting" })] : [districtYearChips(k)])];
+          if (excluded) {
+            if (typeBased) row.push(el("td", { class: "muted small", text: "Not editable" }));
+            if (covBased) row.push(el("td", { class: "muted small", text: "Not editable" }));
+            if (propBased) row.push(el("td", { class: "muted small", text: "Not editable" }));
+            table.appendChild(el("tr", { class: "geo-excluded-row" }, row));
+            return;
+          }
           if (typeBased) { var gt = geoOf(iv, k); row.push(el("td", {}, [selEl(typeOptions(true), (gt && gt.type) || "", function (v) { var g = ensureGeo(iv, k); if (!v) { delete g.type; cleanGeo(iv, k); } else g.type = v; })])); }
           if (covBased) { var g0 = geoOf(iv, k); row.push(el("td", {}, [numEl(g0 && g0.coverage != null ? Math.round(g0.coverage * 100) : null, function (v) { var g = ensureGeo(iv, k); if (v == null) { delete g.coverage; cleanGeo(iv, k); } else g.coverage = v / 100; }, { min: 0, max: 100, step: 1, width: "60px", placeholder: Math.round(defCov * 100) })])); }
           if (propBased) { var g1 = geoOf(iv, k); row.push(el("td", {}, [numEl(g1 && g1.targetPct != null ? g1.targetPct : null, function (v) { var g = ensureGeo(iv, k); if (v == null) { delete g.targetPct; cleanGeo(iv, k); } else g.targetPct = v; }, { min: 0, max: 100, step: 0.1, width: "60px", placeholder: defTarget })])); }

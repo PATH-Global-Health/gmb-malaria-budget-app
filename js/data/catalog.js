@@ -116,6 +116,10 @@ GMB.resolveScope = function (scope, assignment) {
     });
     (scope.districts || []).forEach(add);
   }
+  (scope && scope.includeRegions || []).forEach(function (r) {
+    all.forEach(function (d) { if (d.adm1 === r) add(GMB.strata.key(d.adm1, d.adm2)); });
+  });
+  (scope && scope.includeDistricts || []).forEach(add);
   (scope && scope.exclude || []).forEach(function (k) { delete keys[k]; });
   return keys;
 };

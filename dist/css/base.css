@@ -477,7 +477,19 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 .geo-table th { position: sticky; top: 0; background: #fff; text-align: left; color: var(--muted); font-weight: 600; font-size: .75rem; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .geo-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .geo-region-row td { background: #f3f6fc; font-weight: 600; color: var(--blue-d); }
+.geo-excluded-row { background: #f7f4f5; color: var(--muted); }
+.geo-excluded-row td:first-child::after { content: " excluded"; color: #8a5360; font-size: .72rem; margin-left: 6px; }
 .geo-table .chip { padding: 2px 7px; font-size: .74rem; }
+
+.targeting-modal-grid { display: grid; grid-template-columns: minmax(420px, 1fr) 240px; gap: 14px; align-items: start; }
+.targeting-map { margin-top: 8px; }
+.targeting-map .gmb-map { max-height: 430px; }
+.targeting-actions { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; }
+.targeting-actions .btn, .targeting-actions .linkbtn { width: 100%; justify-content: center; text-align: center; }
+@media (max-width: 820px) {
+  .targeting-modal-grid { grid-template-columns: 1fr; }
+  .targeting-actions { position: static; }
+}
 
 /* Year roll-up legend */
 .year-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; font-size: .8rem; }
