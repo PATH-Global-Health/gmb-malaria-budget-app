@@ -339,10 +339,10 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px
 .band-editor { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
 .band-row { display: flex; align-items: center; gap: 10px; }
 .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; vertical-align: middle; }
-.strata-rule-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 14px; align-items: start; }
-.strata-stats { grid-template-columns: 1fr; gap: 8px; }
-.strata-stats .stat { padding: 10px 12px; }
-@media (max-width: 900px) { .strata-rule-layout { grid-template-columns: 1fr; } }
+.strata-stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 10px 0 6px; }
+.strata-stats .stat { padding: 8px 10px; border-radius: 8px; }
+.strata-stats .stat .value { font-size: 1.25rem; line-height: 1.1; }
+.strata-stats .stat .label { font-size: .74rem; line-height: 1.25; }
 
 .map-wrap { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: #fbfcfe; position: relative; }
 .gmb-leaflet-map { position: relative; width: 100%; min-height: 190px; background: #eef2f7; border-radius: 8px; overflow: hidden; }

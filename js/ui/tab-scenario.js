@@ -327,8 +327,7 @@ GMB.tabs = GMB.tabs || {};
         current.strata.averagingYears.sort(function (a, b) { return a - b; }); refresh();
       });
     }));
-    var strataControls = el("div", { class: "strata-controls" });
-    strataControls.appendChild(el("div", { class: "field" }, [el("label", { text: "Average incidence over years" }), avg]));
+    p.appendChild(el("div", { class: "field" }, [el("label", { text: "Average incidence over years" }), avg]));
 
     var editor = el("div", { class: "band-editor" });
     current.strata.bands.forEach(function (b, i) {
@@ -342,7 +341,7 @@ GMB.tabs = GMB.tabs || {};
       editor.appendChild(el("div", { class: "band-row" }, [el("span", { class: "swatch", style: "background:" + b.color }), nameI, range, rm]));
     });
     editor.appendChild(el("button", { class: "linkbtn", style: "align-self:flex-start;margin-top:4px", onClick: addBand }, ["+ add stratum"]));
-    strataControls.appendChild(editor);
+    p.appendChild(editor);
 
     var natPop = nationalPop(Math.max.apply(null, current.years)), counts = el("div", { class: "stat-grid strata-stats" });
     bands.forEach(function (b) {
@@ -352,7 +351,7 @@ GMB.tabs = GMB.tabs || {};
         el("div", { class: "label", html: G.util.esc(b.name) + " - " + num(bk.population) + " people - <b>" + pct + "%</b> of pop" })
       ]));
     });
-    p.appendChild(el("div", { class: "strata-rule-layout" }, [strataControls, counts]));
+    p.appendChild(counts);
     p.appendChild(el("div", { class: "map-toolbar" }, [
       el("div", { class: "chip-row small" }, bands.map(function (b) { return el("span", {}, [el("span", { class: "swatch", style: "background:" + b.color }), " " + b.name]); })),
       G.ui.downloadButton(function () { return mapApi.el; }, "gambia-strata.png", "Download map")
@@ -867,7 +866,7 @@ GMB.tabs = GMB.tabs || {};
         el("span", { class: "small muted", text: "Manual exclusions" }),
         el("span", { class: "chip-row small" }, excluded.length ? excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = removeValue(scope.exclude, k); rebuild(); } })]); }) : ["None"])
       ]));
-      var map = G.ui.gambiaMap({ onClick: function (k) { selectDistrict(k); rebuild(); } });
+      var map = G.ui.gambiaMap({ selectedStroke: "#FFD400", selectedWidth: "5.5", onClick: function (k) { selectDistrict(k); rebuild(); } });
       map.setColors(function (k) {
         if (withAdds[k] && !covered[k]) return TARGET_COLORS.excluded;
         if (withAdds[k] && !base[k]) return TARGET_COLORS.added;

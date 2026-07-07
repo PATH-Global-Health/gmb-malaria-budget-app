@@ -177,8 +177,9 @@ GMB.ui = GMB.ui || {};
       setOutline: function (fn) {
         Object.keys(paths).forEach(function (k) {
           state.outline[k] = !!fn(k, paths[k].props);
-          paths[k].el.setAttribute("stroke", state.outline[k] ? "#08356f" : (state.strokes[k] || "#ffffff"));
-          paths[k].el.setAttribute("stroke-width", state.outline[k] ? "2.2" : "0.8");
+          paths[k].el.setAttribute("stroke", state.outline[k] ? (opts.selectedStroke || "#08356f") : (state.strokes[k] || "#ffffff"));
+          paths[k].el.setAttribute("stroke-width", state.outline[k] ? (opts.selectedWidth || "2.2") : "0.8");
+          if (state.outline[k] && paths[k].el.parentNode) paths[k].el.parentNode.appendChild(paths[k].el);
         });
       }
     };
