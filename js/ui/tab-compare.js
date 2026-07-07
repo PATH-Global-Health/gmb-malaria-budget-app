@@ -12,6 +12,7 @@ GMB.tabs = GMB.tabs || {};
   var compareSet = {}, baselineId = null, currency = "USD", mainEl = null;
   var f = { years: {}, interventions: {}, costClasses: {} };
   var compareBy = "intervention_code", compMode = "abs", envelope = null, openFilter = {}, lastInitKey = null, rootEl = null;
+  var deltaView = "cost", deltaFilter = "all";
 
   var CLASS_NAMES = { PROC: "Procurement", DIST: "Distribution", OPS: "Operational", SUPP: "Support", "M&E": "Monitoring & evaluation", COM: "Communication", ADMIN: "Administration", OTHER: "Other" };
   var DIMS = [{ value: "intervention_code", label: "Intervention" }, { value: "cost_class", label: "Cost category" }, { value: "year", label: "Year" }, { value: "adm1", label: "Region" }];
@@ -43,6 +44,13 @@ GMB.tabs = GMB.tabs || {};
   function chartLabel(b) { var n = b.scenarioName || b.name || ""; var s = (n.split("—")[0] || n).trim() || n; return s; }
   var SHORT_IV = { mii: "Mass ITN", mii_routine: "Routine ITN", irs: "IRS", smc: "SMC", iptsc: "IPT school-age", vax: "Vaccine", iptp: "IPTp" };
   function legendLabel(dim, k) { return dim === "intervention_code" ? (SHORT_IV[k] || ivName(k)) : dimLabel(dim, k); }
+  function byIvName(a, b) { return ivName(a).localeCompare(ivName(b)); }
+  function changePass(deltas, threshold) {
+    threshold = threshold == null ? 0 : threshold;
+    if (deltaFilter === "inc") return deltas.some(function (d) { return d > threshold; });
+    if (deltaFilter === "dec") return deltas.some(function (d) { return d < -threshold; });
+    return true;
+  }
 
   function avail() {
     var yrs = {}, ivs = {}, cls = {};
@@ -96,7 +104,11 @@ GMB.tabs = GMB.tabs || {};
       });
       return m;
     });
-    order.sort(function (a, b) { return totals[b] - totals[a]; });
+    order.sort(function (a, b) {
+      var la = qtyLabelFromKey(a), lb = qtyLabelFromKey(b), iv = la.intervention.localeCompare(lb.intervention);
+      if (iv) return iv;
+      return [la.type, la.commodity, la.age, la.basis].join("|").localeCompare([lb.type, lb.commodity, lb.age, lb.basis].join("|"));
+    });
     return { order: order, maps: maps, totals: totals };
   }
   function totalOf(b) { var vf = valField(); return filteredRows(b).reduce(function (a, r) { return a + (r[vf] || 0); }, 0); }
@@ -171,8 +183,7 @@ GMB.tabs = GMB.tabs || {};
     var warn = freshnessCallout(picked);
     if (warn) mainEl.appendChild(warn);
     mainEl.appendChild(renderScoreboard(picked));
-    mainEl.appendChild(renderDeltaTable(picked));
-    mainEl.appendChild(renderQuantityDeltaTable(picked));
+    mainEl.appendChild(renderChangeTableCard(picked));
     mainEl.appendChild(el("div", { class: "cards-row two" }, [renderTotalsPlot(picked), renderCompositionPlot(picked)]));
   }
   function renderBody() {
@@ -242,7 +253,7 @@ GMB.tabs = GMB.tabs || {};
   function exportCompareXlsx(picked) {
     var base = picked[0], baseTot = totalOf(base);
     var meta = [["Baseline", shortName(base)], ["Currency", currency], ["Years", allOn(f.years) ? "All" : sel(f.years).join(", ")]];
-    function keysFor(dim) { var t = {}, o = []; picked.forEach(function (b) { U.pivot(filteredRows(b), dim, null, valField()).groups.forEach(function (g) { if (!(g.key in t)) { t[g.key] = 0; o.push(g.key); } t[g.key] += g.total; }); }); if (dim === "year") o.sort(function (a, b) { return a - b; }); else o.sort(function (a, b) { return t[b] - t[a]; }); return o; }
+    function keysFor(dim) { var t = {}, o = []; picked.forEach(function (b) { U.pivot(filteredRows(b), dim, null, valField()).groups.forEach(function (g) { if (!(g.key in t)) { t[g.key] = 0; o.push(g.key); } t[g.key] += g.total; }); }); if (dim === "year") o.sort(function (a, b) { return a - b; }); else if (dim === "intervention_code") o.sort(byIvName); else o.sort(function (a, b) { return t[b] - t[a]; }); return o; }
     function perBudgetMap(dim) { return picked.map(function (b) { var m = {}; U.pivot(filteredRows(b), dim, null, valField()).groups.forEach(function (g) { m[g.key] = g.total; }); return m; }); }
     var sheets = [{ name: "Summary", title: "Budget comparison", meta: meta,
       columns: [{ label: "Budget", width: 210 }, { label: "Scenario", width: 160 }, { label: "Cost set", width: 150 }, { label: "Total (" + currency + ")", width: 130, fmt: "money" }, { label: "Δ vs baseline", width: 120, fmt: "money" }, { label: "Δ %", width: 70, fmt: "num1" }, { label: "Cost per person", width: 120, fmt: "money" }],
@@ -354,20 +365,36 @@ GMB.tabs = GMB.tabs || {};
     return card("Where the money goes — by " + dimName, controls, build(false), dlPng(function () { return build(true); }, "comparison-composition.png"), G.ui.expandPlot("Comparison composition", build));
   }
 
-  // ---- delta table ----
-  function renderDeltaTable(picked) {
-    var base = picked[0], comps = picked.slice(1), vf = valField(), keys = dimValuesSorted(picked);
-    var perBudget = picked.map(function (b) { var m = {}; U.pivot(filteredRows(b), compareBy, null, vf).groups.forEach(function (gr) { m[gr.key] = gr.total; }); return m; });
-    var dimName = DIMS.filter(function (d) { return d.value === compareBy; })[0].label;
-
-    var head = [el("th", { text: dimName }), el("th", { class: "num", text: shortName(base) + " (baseline)" })].concat(comps.map(function (b) { return el("th", { class: "num", text: shortName(b) }); }));
+  // ---- cost / commodity change table ----
+  function changeControls() {
+    return el("div", { class: "plot-controls" }, [
+      seg([{ value: "cost", label: "Cost" }, { value: "commodity", label: "Commodity" }], deltaView, function (v) { deltaView = v; refresh(); }),
+      seg([{ value: "all", label: "All" }, { value: "inc", label: "Has increases" }, { value: "dec", label: "Has decreases" }], deltaFilter, function (v) { deltaFilter = v; refresh(); })
+    ]);
+  }
+  function costDeltaMaps(picked) {
+    var maps = picked.map(function (b) {
+      var m = {};
+      U.pivot(filteredRows(b), "intervention_code", null, valField()).groups.forEach(function (gr) { m[gr.key] = gr.total; });
+      return m;
+    });
+    var seen = {};
+    maps.forEach(function (m) { Object.keys(m).forEach(function (k) { seen[k] = true; }); });
+    var keys = Object.keys(seen).sort(byIvName);
+    return { keys: keys, maps: maps };
+  }
+  function renderCostDeltaBody(picked) {
+    var base = picked[0], comps = picked.slice(1), cm = costDeltaMaps(picked);
+    var head = [el("th", { text: "Intervention" }), el("th", { class: "num", text: shortName(base) + " (baseline)" })].concat(comps.map(function (b) { return el("th", { class: "num", text: shortName(b) }); }));
     var t = el("table", { class: "data-table cmp-delta" }, [el("tr", {}, head)]);
-    keys.forEach(function (k) {
-      var bv = perBudget[0][k] || 0;
-      var cells = [el("td", { class: "rowlab", text: dimLabel(compareBy, k) }), el("td", { class: "num", text: money(bv) })];
+    var rendered = 0;
+    cm.keys.forEach(function (k) {
+      var bv = cm.maps[0][k] || 0, deltas = comps.map(function (b, ci) { return (cm.maps[ci + 1][k] || 0) - bv; });
+      if (!changePass(deltas, 1)) return;
+      rendered++;
+      var cells = [el("td", { class: "rowlab", text: ivName(k) }), el("td", { class: "num", text: money(bv) })];
       comps.forEach(function (b, ci) {
-        var cv = perBudget[ci + 1][k] || 0, d = cv - bv;
-        var pill;
+        var cv = cm.maps[ci + 1][k] || 0, d = cv - bv, pill;
         if (bv === 0 && cv > 0) pill = el("span", { class: "delta-pill new", text: "New" });
         else if (Math.abs(d) < 1) pill = el("span", { class: "delta-pill none", text: "–" });
         else { var pc = bv ? Math.round(d / bv * 100) : 0; pill = el("span", { class: "delta-pill " + (d > 0 ? "up" : "down"), text: (d > 0 ? "▲ +" : "▼ −") + moneyShort(Math.abs(d)) + " (" + (d > 0 ? "+" : "") + pc + "%)" }); }
@@ -375,28 +402,20 @@ GMB.tabs = GMB.tabs || {};
       });
       t.appendChild(el("tr", {}, cells));
     });
-    // totals row
+    if (!rendered) t.appendChild(el("tr", {}, [el("td", { colspan: String(2 + comps.length), class: "muted", text: "No intervention costs match this change filter." })]));
     var totRow = [el("td", { class: "rowlab", text: "TOTAL" }), el("td", { class: "num", text: money(totalOf(base)) })].concat(comps.map(function (b) { return el("td", { class: "num", text: money(totalOf(b)) }); }));
-    t.appendChild(el("tr", { class: "total-row" }, totRow));
-
-    var dl = el("button", { class: "linkbtn dl-btn", onClick: function () { exportCompareXlsx(picked); } }, ["⬇ Export to Excel"]);
-    return card("Change vs baseline — by " + dimName.toLowerCase(), null, el("div", { class: "table-scroll" }, [t]), dl);
+    if (deltaFilter === "all") t.appendChild(el("tr", { class: "total-row" }, totRow));
+    return el("div", { class: "table-scroll" }, [t]);
   }
-
-  function renderQuantityDeltaTable(picked) {
+  function renderCommodityDeltaBody(picked) {
     var base = picked[0], comps = picked.slice(1), qm = quantityMaps(picked);
-    var head = [el("th", { text: "Intervention" }), el("th", { text: "Type" }), el("th", { text: "Commodity" }), el("th", { text: "Age / basis" }), el("th", { class: "num", text: shortName(base) + " qty" })];
-    comps.forEach(function (b) {
-      head.push(el("th", { class: "num", text: shortName(b) + " qty" }));
-      head.push(el("th", { class: "num", text: "Change" }));
-      head.push(el("th", { class: "num", text: "Change %" }));
-    });
+    var head = [el("th", { text: "Intervention" }), el("th", { text: "Type" }), el("th", { text: "Commodity" }), el("th", { text: "Age / basis" }), el("th", { class: "num", text: shortName(base) + " qty" })].concat(comps.map(function (b) { return el("th", { class: "num", text: shortName(b) + " qty" }); }));
     var t = el("table", { class: "data-table cmp-delta" }, [el("tr", {}, head)]);
-    if (!qm.order.length) {
-      t.appendChild(el("tr", {}, [el("td", { colspan: String(5 + comps.length * 3), class: "muted", text: "No commodity quantities match the selected filters." })]));
-    }
+    var rendered = 0;
     qm.order.forEach(function (k) {
-      var lab = qtyLabelFromKey(k), bv = qm.maps[0][k] || 0;
+      var lab = qtyLabelFromKey(k), bv = qm.maps[0][k] || 0, deltas = comps.map(function (b, ci) { return (qm.maps[ci + 1][k] || 0) - bv; });
+      if (!changePass(deltas, 0.5)) return;
+      rendered++;
       var cells = [
         el("td", { class: "rowlab", text: lab.intervention }),
         el("td", { text: lab.type || "" }),
@@ -405,20 +424,24 @@ GMB.tabs = GMB.tabs || {};
         el("td", { class: "num", text: U.fmtNum(bv) })
       ];
       comps.forEach(function (b, ci) {
-        var cv = qm.maps[ci + 1][k] || 0, d = cv - bv, pc = bv ? (d / bv * 100) : (cv ? 100 : 0);
-        var pill = Math.abs(d) < 0.5 ? el("span", { class: "delta-pill none", text: "–" })
-          : el("span", { class: "delta-pill " + (d > 0 ? "up" : "down"), text: (d > 0 ? "▲ +" : "▼ −") + U.fmtNum(Math.abs(d)) });
-        cells.push(el("td", { class: "num", text: U.fmtNum(cv) }));
-        cells.push(el("td", { class: "num" }, [pill]));
-        cells.push(el("td", { class: "num", text: bv || cv ? ((d > 0 ? "+" : "") + Math.round(pc * 10) / 10 + "%") : "" }));
+        var cv = qm.maps[ci + 1][k] || 0, d = cv - bv, pc = bv ? Math.round(d / bv * 100) : 0, pill;
+        if (bv === 0 && cv > 0) pill = el("span", { class: "delta-pill new", text: "New" });
+        else if (Math.abs(d) < 0.5) pill = el("span", { class: "delta-pill none", text: "–" });
+        else pill = el("span", { class: "delta-pill " + (d > 0 ? "up" : "down"), text: (d > 0 ? "▲ +" : "▼ −") + U.fmtNum(Math.abs(d)) + (bv ? " (" + (d > 0 ? "+" : "") + pc + "%)" : "") });
+        cells.push(el("td", { class: "num" }, [document.createTextNode(U.fmtNum(cv) + " "), pill]));
       });
       t.appendChild(el("tr", {}, cells));
     });
-    var dl = el("button", { class: "linkbtn dl-btn", onClick: function () { exportCompareXlsx(picked); } }, ["⬇ Export to Excel"]);
-    return card("Change in commodity requirements", null, el("div", {}, [
+    if (!rendered) t.appendChild(el("tr", {}, [el("td", { colspan: String(5 + comps.length), class: "muted", text: "No commodity quantities match this change filter." })]));
+    return el("div", {}, [
       el("p", { class: "muted small", style: "margin-top:0", text: "Uses the selected years and interventions. Cost-category filters do not apply to commodity quantities." }),
       el("div", { class: "table-scroll" }, [t])
-    ]), dl);
+    ]);
+  }
+  function renderChangeTableCard(picked) {
+    var title = (deltaView === "cost" ? "Cost change vs baseline" : "Commodity change vs baseline") + " — by intervention";
+    var body = deltaView === "cost" ? renderCostDeltaBody(picked) : renderCommodityDeltaBody(picked);
+    return card(title, changeControls(), body, el("button", { class: "linkbtn dl-btn", onClick: function () { exportCompareXlsx(picked); } }, ["⬇ Export to Excel"]));
   }
 
   G.tabs.compare = { render: render };
