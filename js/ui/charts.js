@@ -355,13 +355,36 @@ GMB.charts = GMB.charts || {};
     return mapSvg;
   };
   function packSwatch(items, W, yTop, s) {
-    var pad = 18, lineH = 34, sw = 22, gap = 10, charW = 11, x = pad, y = yTop + 26, rows = 1;
-    items.forEach(function (it) {
-      var tw = sw + gap + it.label.length * charW + 26;
-      if (x + tw > W - pad && x > pad) { x = pad; y += lineH; rows++; }
-      if (s) { s.appendChild(node("rect", { x: x, y: y - sw + 4, width: sw, height: sw, rx: 3, fill: it.color })); s.appendChild(txt(x + sw + gap, y, it.label, { fill: INK, size: 22 })); }
-      x += tw;
-    });
-    return (yTop + 26) + (rows - 1) * lineH + 18 - yTop;
+    var pad = 18, cols = 2, colGap = 34, sw = 22, gap = 10, fs = 22, lineH = 26, rowGap = 10, charW = 11;
+    var colW = (W - pad * 2 - colGap) / cols, textW = Math.max(80, colW - sw - gap), maxChars = Math.max(8, Math.floor(textW / charW));
+    function wrap(label) {
+      var words = String(label || "").split(/\s+/), lines = [], line = "";
+      words.forEach(function (word) {
+        if (!line) { line = word; return; }
+        if ((line + " " + word).length <= maxChars) line += " " + word;
+        else { lines.push(line); line = word; }
+      });
+      if (line) lines.push(line);
+      return lines.length ? lines : [""];
+    }
+    var wrapped = (items || []).map(function (it) { return { label: it.label, color: it.color, lines: wrap(it.label) }; });
+    var y = yTop + 26, usedH = 0;
+    for (var i = 0; i < wrapped.length; i += cols) {
+      var row = wrapped.slice(i, i + cols), rowLines = Math.max.apply(null, row.map(function (it) { return it.lines.length; }));
+      row.forEach(function (it, j) {
+        var x = pad + j * (colW + colGap);
+        if (s) {
+          s.appendChild(node("rect", { x: x, y: y - sw + 4, width: sw, height: sw, rx: 3, fill: it.color }));
+          var t = txt(x + sw + gap, y, "", { fill: INK, size: fs });
+          it.lines.forEach(function (line, li) {
+            t.appendChild(node("tspan", { x: x + sw + gap, dy: li ? lineH : 0 }, line));
+          });
+          s.appendChild(t);
+        }
+      });
+      usedH += rowLines * lineH + rowGap;
+      y += rowLines * lineH + rowGap;
+    }
+    return Math.max(44, usedH + 10);
   }
 })(GMB.charts);
