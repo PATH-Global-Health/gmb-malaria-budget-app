@@ -1,5 +1,5 @@
-/* Scenario specification â€” SNT-style page (Phase 2a + 2b).
-   Layout: 1 plan basics Â· 2 stratification Â· [3 mix | 4 map viewer] Â· 5 specifications Â· sticky summary.
+/* Scenario specification - SNT-style page (Phase 2a + 2b).
+   Layout: 1 plan basics - 2 stratification - [3 mix | 4 map viewer] - 5 specifications - sticky summary.
    Geography/timing overrides live in iv.geo[key] = {years?, coverage?, targetPct?}. Nothing is
    persisted until "Save scenario" is clicked (current is an in-memory working copy). */
 window.GMB = window.GMB || {};
@@ -21,8 +21,8 @@ GMB.tabs = GMB.tabs || {};
     { key: "total", label: "Total population", def: { mode: "total" } },
     { key: "households", label: "Households", def: { mode: "households" } },
     { key: "u5", label: "Children under 5", def: { mode: "groups", groups: [{ label: "Children under 5", pct: 16 }] } },
-    { key: "smc359", label: "Children 3â€“59 months", def: { mode: "groups", groups: [{ label: "Children 3â€“11 months", pct: 3.0 }, { label: "Children 12â€“59 months", pct: 11.5 }] } },
-    { key: "school", label: "School-age children (5â€“15)", def: { mode: "groups", groups: [{ label: "Primary school-age", pct: 16 }, { label: "Secondary school-age", pct: 9 }] } },
+    { key: "smc359", label: "Children 3-59 months", def: { mode: "groups", groups: [{ label: "Children 3-11 months", pct: 3.0 }, { label: "Children 12-59 months", pct: 11.5 }] } },
+    { key: "school", label: "School-age children (5-15)", def: { mode: "groups", groups: [{ label: "Primary school-age", pct: 16 }, { label: "Secondary school-age", pct: 9 }] } },
     { key: "infant", label: "Infant vaccine cohort", def: { mode: "groups", groups: [{ label: "Infant vaccine cohort", pct: 3.5 }] } },
     { key: "routine", label: "Routine-eligible (ANC + infants)", def: { mode: "groups", groups: [{ label: "Routine-eligible (ANC + infants)", pct: 8.24 }] } }
   ];
@@ -105,7 +105,7 @@ GMB.tabs = GMB.tabs || {};
         activeYears: scn.years.slice(), geo: {},
         levers: (t && t.levers) ? clone(t.levers) : {}
       };
-      // Mass ITN runs as a campaign â€” default a single 2028 campaign (matches the model), every 3 years.
+      // Mass ITN runs as a campaign - default a single 2028 campaign (matches the model), every 3 years.
       if (c.code === "mii") { iv.campaign = { mode: "recurring", firstYear: 2028, everyYears: 3 }; iv.activeYears = campaignYears(iv.campaign, scn.years); }
       scn.interventions[c.code] = iv;
     });
@@ -227,7 +227,7 @@ GMB.tabs = GMB.tabs || {};
     if (title) a.title = title;
     return el("span", a, [label]);
   }
-  function info(text) { return el("span", { class: "info", title: text, role: "img", "aria-label": text }, ["â“˜"]); }
+  function info(text) { return el("span", { class: "info", title: text, role: "img", "aria-label": text }, ["i"]); }
   // ---------- render ----------
   function refresh() { renderBody(); }
 
@@ -269,16 +269,16 @@ GMB.tabs = GMB.tabs || {};
     var scnChips = el("div", { class: "chip-row" }, scns.map(function (s) {
       return chip(s.name, s.id === current.id, function () { guardUnsaved(function () { loadScenario(s.id); }); }, s.description || s.name);
     }).concat([
-      chip("â§‰ Duplicate", false, function () { guardUnsaved(function () { duplicateScenario(); }); }),
+      chip("Duplicate", false, function () { guardUnsaved(function () { duplicateScenario(); }); }),
       chip("+ New", false, function () { guardUnsaved(function () { newScenario(); }); })
     ]));
     var actions = el("div", { class: "actions-row" }, [
-      el("button", { class: "linkbtn", onClick: exportScenarioXlsx }, ["â¬‡ Export to Excel"])
+      el("button", { class: "linkbtn", onClick: exportScenarioXlsx }, ["Export to Excel"])
     ]);
     p.appendChild(el("div", { class: "field" }, [el("label", { text: "Scenario" }), scnChips, actions]));
     p.appendChild(el("div", { class: "field" }, [el("label", { text: "Scenario name" }), name]));
     var notes = document.createElement("textarea"); notes.value = current.description || ""; notes.rows = 2;
-    notes.placeholder = "Optional â€” a longer description of this scenario";
+    notes.placeholder = "Optional - a longer description of this scenario";
     notes.style.width = "100%"; notes.style.maxWidth = "560px";
     notes.addEventListener("input", function () { current.description = notes.value; updateSaveState(); });
     p.appendChild(el("div", { class: "field" }, [el("label", { text: "Notes / description" }), notes]));
@@ -312,9 +312,9 @@ GMB.tabs = GMB.tabs || {};
       var nameI = document.createElement("input"); nameI.type = "text"; nameI.value = b.name; nameI.style.width = "110px";
       nameI.addEventListener("input", function () { b.name = nameI.value; updateSaveState(); });
       var range;
-      if (!last) { var cut = numEl(b.max, function (v) { if (v != null) { b.max = v; current.strata.bands[i + 1].min = v; refresh(); } }, { min: 0, step: 1, width: "60px" }); range = el("span", { class: "small" }, [(i === 0 ? "< " : num(b.min) + " â€“ "), cut]); }
-      else range = el("span", { class: "small", text: "â‰¥ " + num(b.min) });
-      var rm = current.strata.bands.length > 1 ? el("span", { class: "x", title: "Remove stratum", text: "Ã—", onClick: function () { removeBand(b.id); } }) : null;
+      if (!last) { var cut = numEl(b.max, function (v) { if (v != null) { b.max = v; current.strata.bands[i + 1].min = v; refresh(); } }, { min: 0, step: 1, width: "60px" }); range = el("span", { class: "small" }, [(i === 0 ? "< " : num(b.min) + " - "), cut]); }
+      else range = el("span", { class: "small", text: ">= " + num(b.min) });
+      var rm = current.strata.bands.length > 1 ? el("span", { class: "x", title: "Remove stratum", text: "x", onClick: function () { removeBand(b.id); } }) : null;
       editor.appendChild(el("div", { class: "band-row" }, [el("span", { class: "swatch", style: "background:" + b.color }), nameI, range, rm]));
     });
     editor.appendChild(el("button", { class: "linkbtn", style: "align-self:flex-start;margin-top:4px", onClick: addBand }, ["+ add stratum"]));
@@ -325,7 +325,7 @@ GMB.tabs = GMB.tabs || {};
       var bk = assignment.result.byBand[b.id], pct = natPop ? Math.round(bk.population / natPop * 100) : 0;
       counts.appendChild(el("div", { class: "stat", style: "border-left:4px solid " + b.color }, [
         el("div", { class: "value", text: bk.count }),
-        el("div", { class: "label", html: G.util.esc(b.name) + " Â· " + num(bk.population) + " people Â· <b>" + pct + "%</b> of pop" })
+        el("div", { class: "label", html: G.util.esc(b.name) + " - " + num(bk.population) + " people - <b>" + pct + "%</b> of pop" })
       ]));
     });
     p.appendChild(counts);
@@ -363,7 +363,7 @@ GMB.tabs = GMB.tabs || {};
     mapApi.setOutline(function (k) { return !!current.strata.overrides[k]; });
     mapApi.setTitles(function (k, props) {
       var inc = assignment.result.incByDistrict[k], bandId = assignment.result.byDistrict[k], band = assignment.bands.filter(function (b) { return b.id === bandId; })[0];
-      return props.adm2 + " â€” " + (inc == null ? "no data" : Math.round(inc * 10) / 10 + "/1,000") + " Â· " + (band ? band.name : "") + (current.strata.overrides[k] ? " (override)" : "");
+      return props.adm2 + " - " + (inc == null ? "no data" : Math.round(inc * 10) / 10 + "/1,000") + " - " + (band ? band.name : "") + (current.strata.overrides[k] ? " (override)" : "");
     });
   }
 
@@ -424,7 +424,7 @@ GMB.tabs = GMB.tabs || {};
     });
     var map = G.ui.gambiaMap({});
     map.setColors(function (k) { var key = combo(k).join("+"); return key ? colorOf[key] : "#eef0f4"; });
-    map.setTitles(function (k, pr) { var codes = combo(k); return pr.adm2 + " â€” " + (codes.map(function (x) { return SHORT[x]; }).join(" + ") || "none"); });
+    map.setTitles(function (k, pr) { var codes = combo(k); return pr.adm2 + " - " + (codes.map(function (x) { return SHORT[x]; }).join(" + ") || "none"); });
     p.appendChild(el("div", { class: "map-toolbar" }, [el("span", { class: "small muted", text: order.length + " combinations" }), G.ui.downloadButton(function () { return map.el; }, "intervention-mix.png", "Download map")]));
     p.appendChild(el("div", { class: "map-wrap" }, [map.el]));
     p.appendChild(el("div", { class: "viewer-legend" }, order.map(function (key) {
@@ -452,13 +452,13 @@ GMB.tabs = GMB.tabs || {};
   function renderSingleMap(p, assignment, c, iv) {
     var covered = resolvedTargetKeys(iv, assignment), years = current.years;
     if (!viewerStagger) {
-      p.appendChild(el("div", { class: "small muted", style: "margin:4px 0", text: "Fill = the year(s) each district runs (rolled up across all years). Use â€˜year by yearâ€™ or â€˜Set by geographyâ€™ in step 5 to edit." }));
+      p.appendChild(el("div", { class: "small muted", style: "margin:4px 0", text: "Fill = the year(s) each district runs (rolled up across all years). Use 'year by year' or 'Set by geography' in step 5 to edit." }));
       var map = G.ui.gambiaMap({});
       map.setColors(function (k) { return yearColor(yearCategory(iv, k, covered)); });
       map.setTitles(function (k, pr) {
         var cc = yearCategory(iv, k, covered);
         var t = cc.cat === "none" ? "not targeted" : cc.cat === "off" ? "off (no years)" : cc.cat === "all" ? "every year" : cc.cat === "year" ? "only " + cc.year : "years " + cc.years.join(", ");
-        return pr.adm2 + " â€” " + t;
+        return pr.adm2 + " - " + t;
       });
       // legend: categories present
       var present = {};
@@ -468,7 +468,7 @@ GMB.tabs = GMB.tabs || {};
       years.forEach(function (y) { if (present["y" + y]) legend.appendChild(el("div", { class: "row" }, [el("span", { class: "swatch", style: "background:" + YEAR_PALETTE[years.indexOf(y) % YEAR_PALETTE.length] }), "Only " + y])); });
       if (present.multi) legend.appendChild(el("div", { class: "row" }, [el("span", { class: "swatch", style: "background:" + MULTI_COLOR }), "Multiple years"]));
       if (present.off) legend.appendChild(el("div", { class: "row" }, [el("span", { class: "swatch", style: "background:" + OFF_COLOR }), "Off"]));
-      p.appendChild(el("div", { class: "map-toolbar" }, [el("span", { class: "small muted", text: SHORT[c.code] + " Â· roll-up" }), G.ui.downloadButton(function () { return map.el; }, c.code + "-rollup.png", "Download map")]));
+      p.appendChild(el("div", { class: "map-toolbar" }, [el("span", { class: "small muted", text: SHORT[c.code] + " - roll-up" }), G.ui.downloadButton(function () { return map.el; }, c.code + "-rollup.png", "Download map")]));
       p.appendChild(el("div", { class: "map-wrap" }, [map.el]));
       p.appendChild(legend);
       return p;
@@ -480,7 +480,7 @@ GMB.tabs = GMB.tabs || {};
     years.forEach(function (y) {
       var m = G.ui.gambiaMap({ onClick: function (key) { toggleYear(iv, key, y, covered[key]); } });
       m.setColors(function (k) { return covered[k] ? (isActive(iv, k, y) ? color : "#dfe5ee") : "#f3f5f8"; });
-      m.setTitles(function (k, pr) { return pr.adm2 + " â€” " + (!covered[k] ? "not targeted" : (isActive(iv, k, y) ? "active " + y : "not in " + y)); });
+      m.setTitles(function (k, pr) { return pr.adm2 + " - " + (!covered[k] ? "not targeted" : (isActive(iv, k, y) ? "active " + y : "not in " + y)); });
       grid.appendChild(el("div", { class: "viewer-cell" }, [
         el("div", { class: "vc-head" }, [el("strong", { text: String(y) }), G.ui.downloadButton(function () { return m.el; }, c.code + "-" + y + ".png", "PNG")]),
         el("div", { class: "map-wrap small-map" }, [m.el])
@@ -504,13 +504,13 @@ GMB.tabs = GMB.tabs || {};
     p.appendChild(el("div", { class: "scn-h" }, [el("span", { class: "scn-step", text: "5" }), "Intervention specifications"]));
     var enabled = G.catalog.filter(function (c) { return current.interventions[c.code].enabled; });
     if (!enabled.length) { p.appendChild(el("p", { class: "muted small", text: "Turn on interventions in step 3 to set them up here." })); return p; }
-    p.appendChild(el("p", { class: "muted small", text: "Set target population, coverage, timing, and levers. Use â€˜Set by geographyâ€™ for district-level timing/coverage." }));
+    p.appendChild(el("p", { class: "muted small", text: "Set target population, coverage, timing, and levers. Use 'Set by geography' for district-level timing/coverage." }));
     var grid = el("div", { class: "spec-grid" });
     enabled.forEach(function (c) { grid.appendChild(renderSpecCard(c, current.interventions[c.code], assignment)); });
     p.appendChild(grid);
     return p;
   }
-  // Coverage block â€” label + Universal/By year/By stratum seg + values, all flowing on one line.
+  // Coverage block - label + Universal/By year/By stratum seg + values, all flowing on one line.
   function renderCoverage(c, iv, assignment, card) {
     var comps = coverageComps(c);
     function compInputs(target, getStore, setStore) {
@@ -552,7 +552,7 @@ GMB.tabs = GMB.tabs || {};
     });
     modal = G.ui.openModal({
       title: "Mean household size by region",
-      body: el("div", {}, [el("p", { class: "muted small", style: "margin-top:0", text: "Used to convert district population into households for IRS (households = population Ã· mean household size). Defaults from household-size.xlsx." }), tbl]),
+      body: el("div", {}, [el("p", { class: "muted small", style: "margin-top:0", text: "Used to convert district population into households for IRS (households = population / mean household size). Defaults from household-size.xlsx." }), tbl]),
       footer: [el("button", { class: "linkbtn", onClick: function () { delete current.assumptions.householdSize; modal.close(); } }, ["Reset to defaults"]),
         el("button", { class: "btn", onClick: function () { modal.close(); } }, ["Done"])],
       onClose: function () { refresh(); }
@@ -565,8 +565,8 @@ GMB.tabs = GMB.tabs || {};
     card.appendChild(el("div", { class: "spec-head" }, [
       el("div", {}, [el("strong", { text: c.nice }), el("span", { class: "muted small", style: "margin-left:6px", text: c.commodity })]),
       el("div", { class: "spec-head-right" }, [
-        nOv ? el("span", { class: "small muted", style: "margin-right:6px" }, [nOv + " override" + (nOv > 1 ? "s" : "") + " Â· ", el("a", { href: "#", text: "clear", onClick: function (e) { e.preventDefault(); iv.geo = {}; refresh(); } })]) : null,
-        el("button", { class: "linkbtn", onClick: function () { openGeoModal(c, iv); } }, ["Set by geographyâ€¦"])
+        nOv ? el("span", { class: "small muted", style: "margin-right:6px" }, [nOv + " override" + (nOv > 1 ? "s" : "") + " - ", el("a", { href: "#", text: "clear", onClick: function (e) { e.preventDefault(); iv.geo = {}; refresh(); } })]) : null,
+        el("button", { class: "linkbtn", onClick: function () { openGeoModal(c, iv); } }, ["Set by geography..."])
       ])
     ]));
     // Type / net type (net-type interventions can vary by year or stratum)
@@ -590,7 +590,7 @@ GMB.tabs = GMB.tabs || {};
       }
     }
 
-    // Intervention target population â€” dropdown + "% of total population" rows
+    // Intervention target population - dropdown + "% of total population" rows
     var tgt = iv.target || { mode: "total", key: "total" };
     card.appendChild(el("div", { class: "settings-line" }, [el("span", { class: "small muted", text: "Intervention target population" }),
       selEl(TARGET_PRESETS.map(function (p) { return { value: p.key, label: p.label }; }), tgt.key || "total", function (v) {
@@ -599,11 +599,11 @@ GMB.tabs = GMB.tabs || {};
     if (tgt.mode === "total") card.appendChild(el("div", { class: "settings-line" }, [el("span", { class: "small muted", text: "100% of total population" })]));
     else if (tgt.mode === "households") card.appendChild(el("div", { class: "settings-line" }, [
       el("a", { href: "#", class: "small", onClick: function (e) { e.preventDefault(); openHouseholdModal(); } }, ["Households"]),
-      el("span", { class: "small muted", text: " â€” district population Ã· region mean household size" }),
-      info("Click â€˜Householdsâ€™ to view or edit the region mean household sizes. Structures sprayed = households Ã— coverage.")
+      el("span", { class: "small muted", text: " - district population / region mean household size" }),
+      info("Click 'Households' to view or edit the region mean household sizes. Structures sprayed = households x coverage.")
     ]));
     else {
-      tgt.groups.forEach(function (gr) { card.appendChild(el("div", { class: "settings-line group-row" }, [numEl(gr.pct, function (v) { gr.pct = v; refresh(); }, { min: 0, max: 100, step: 0.01, width: "56px" }), el("span", { class: "small", text: "% of total population â€” " + gr.label })])); });
+      tgt.groups.forEach(function (gr) { card.appendChild(el("div", { class: "settings-line group-row" }, [numEl(gr.pct, function (v) { gr.pct = v; refresh(); }, { min: 0, max: 100, step: 0.01, width: "56px" }), el("span", { class: "small", text: "% of total population - " + gr.label })])); });
       if (tgt.groups.length > 1) card.appendChild(el("div", { class: "settings-line" }, [el("span", { class: "small muted", text: "= " + (Math.round(groupSum(iv) * 100) / 100) + "% of total" })]));
     }
 
@@ -657,7 +657,7 @@ GMB.tabs = GMB.tabs || {};
       }
     }
     if (c.code === "mii") {
-      levers.appendChild(el("label", { class: "small inline-toggle" }, [chk(iv.levers.maxNetsPerHH, function (v) { iv.levers.maxNetsPerHH = v; if (v && !iv.levers.netCap) iv.levers.netCap = JSON.parse(JSON.stringify(G.assumptions.netCapByRegion)); refresh(); }), " cap nets per household", info("Caps nets at each regionâ€™s census household maximum, cutting nets needed by a region-specific amount. Applied in the budget engine.")]));
+      levers.appendChild(el("label", { class: "small inline-toggle" }, [chk(iv.levers.maxNetsPerHH, function (v) { iv.levers.maxNetsPerHH = v; if (v && !iv.levers.netCap) iv.levers.netCap = JSON.parse(JSON.stringify(G.assumptions.netCapByRegion)); refresh(); }), " cap nets per household", info("Caps nets at each region's census household maximum, cutting nets needed by a region-specific amount. Applied in the budget engine.")]));
       if (iv.levers.maxNetsPerHH) {
         var capTbl = el("table", { class: "lever-table" }, [el("tr", {}, [el("th", { text: "Region" }), el("th", { text: "Max nets/HH" }), el("th", { text: "% reduction" })])]);
         Object.keys(iv.levers.netCap).forEach(function (rg) {
@@ -668,15 +668,15 @@ GMB.tabs = GMB.tabs || {};
         });
         levers.appendChild(el("div", { class: "lever-fold" }, [capTbl]));
       }
-      levers.appendChild(el("label", { class: "small inline-toggle" }, [chk(iv.levers.urbanDeprioritise, function (v) { iv.levers.urbanDeprioritise = v; if (v) { if (!iv.levers.urbanAreas) iv.levers.urbanAreas = LD.urbanAreas.slice(); if (iv.levers.urbanPct == null) iv.levers.urbanPct = LD.urbanPct; } refresh(); }), " deprioritise urban", info("Removes the set % of population in the chosen urban areas from the campaign â€” assumed covered another way â€” reducing nets there. Applied in the budget engine.")]));
+      levers.appendChild(el("label", { class: "small inline-toggle" }, [chk(iv.levers.urbanDeprioritise, function (v) { iv.levers.urbanDeprioritise = v; if (v) { if (!iv.levers.urbanAreas) iv.levers.urbanAreas = LD.urbanAreas.slice(); if (iv.levers.urbanPct == null) iv.levers.urbanPct = LD.urbanPct; } refresh(); }), " deprioritise urban", info("Removes the set % of population in the chosen urban areas from the campaign - assumed covered another way - reducing nets there. Applied in the budget engine.")]));
       if (iv.levers.urbanDeprioritise) {
         var fold = el("div", { class: "lever-fold" });
         fold.appendChild(el("div", { class: "settings-line" }, [numEl(iv.levers.urbanPct, function (v) { iv.levers.urbanPct = v; }, { min: 0, max: 100, step: 5, width: "50px" }), el("span", { class: "small muted", text: "% of population excluded in these areas" })]));
         var chips = el("div", { class: "chip-row small" }, (iv.levers.urbanAreas || []).map(function (k) {
-          return el("span", { class: "chip removable" }, [k.split("|")[1], el("span", { class: "x", text: " Ã—", onClick: function () { iv.levers.urbanAreas = iv.levers.urbanAreas.filter(function (x) { return x !== k; }); refresh(); } })]);
+          return el("span", { class: "chip removable" }, [k.split("|")[1], el("span", { class: "x", text: " x", onClick: function () { iv.levers.urbanAreas = iv.levers.urbanAreas.filter(function (x) { return x !== k; }); refresh(); } })]);
         }));
         var remaining = G.reference.districtPairs().map(function (d) { return d.adm1 + "|" + d.adm2; }).filter(function (k) { return (iv.levers.urbanAreas || []).indexOf(k) === -1; });
-        var addSel = selEl([{ value: "", label: "+ add areaâ€¦" }].concat(remaining.map(function (k) { return { value: k, label: k.split("|")[1] + " (" + k.split("|")[0] + ")" }; })), "", function (v) { if (v) { iv.levers.urbanAreas.push(v); refresh(); } });
+        var addSel = selEl([{ value: "", label: "+ add area..." }].concat(remaining.map(function (k) { return { value: k, label: k.split("|")[1] + " (" + k.split("|")[0] + ")" }; })), "", function (v) { if (v) { iv.levers.urbanAreas.push(v); refresh(); } });
         fold.appendChild(el("div", { class: "settings-line wrap" }, [el("span", { class: "small muted", text: "Areas:" }), chips, addSel]));
         levers.appendChild(fold);
       }
@@ -689,7 +689,7 @@ GMB.tabs = GMB.tabs || {};
 
     var ex = iv.scope.exclude || [];
     if (ex.length) card.appendChild(el("div", { class: "settings-line" }, [el("span", { class: "small muted", text: "Excluded:" }), el("span", { class: "chip-row small" }, ex.map(function (k) {
-      return el("span", { class: "chip removable" }, [k.split("|")[1], el("span", { class: "x", text: " Ã—", onClick: function () { iv.scope.exclude = ex.filter(function (x) { return x !== k; }); refresh(); } })]);
+      return el("span", { class: "chip removable" }, [k.split("|")[1], el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = ex.filter(function (x) { return x !== k; }); refresh(); } })]);
     }))]));
 
     var lastYear = Math.max.apply(null, current.years), covered = resolvedTargetKeys(iv, assignment), targ = 0;
@@ -736,19 +736,19 @@ GMB.tabs = GMB.tabs || {};
         var dists = allDistrictKeys().filter(function (k) { return (scope.districts || []).indexOf(k) === -1; });
         holder.appendChild(el("div", { class: "settings-line wrap" }, [
           el("span", { class: "small muted", text: "Regions" }),
-          el("span", { class: "chip-row small" }, (scope.regions || []).map(function (r) { return el("span", { class: "chip removable" }, [r, el("span", { class: "x", text: " Ã—", onClick: function () { iv.scope.regions = (scope.regions || []).filter(function (x) { return x !== r; }); rebuild(); } })]); })),
+          el("span", { class: "chip-row small" }, (scope.regions || []).map(function (r) { return el("span", { class: "chip removable" }, [r, el("span", { class: "x", text: " x", onClick: function () { iv.scope.regions = (scope.regions || []).filter(function (x) { return x !== r; }); rebuild(); } })]); })),
           selEl([{ value: "", label: "+ add region..." }].concat(regs.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { (iv.scope.regions = iv.scope.regions || []).push(v); rebuild(); } })
         ]));
         holder.appendChild(el("div", { class: "settings-line wrap" }, [
           el("span", { class: "small muted", text: "Districts" }),
-          el("span", { class: "chip-row small" }, (scope.districts || []).map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " Ã—", onClick: function () { iv.scope.districts = (scope.districts || []).filter(function (x) { return x !== k; }); rebuild(); } })]); })),
+          el("span", { class: "chip-row small" }, (scope.districts || []).map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.districts = (scope.districts || []).filter(function (x) { return x !== k; }); rebuild(); } })]); })),
           selEl([{ value: "", label: "+ add district..." }].concat(dists.map(function (k) { return { value: k, label: districtLabel(k) }; })), "", function (v) { if (v) { (iv.scope.districts = iv.scope.districts || []).push(v); rebuild(); } })
         ]));
       }
       var addable = Object.keys(base).filter(function (k) { return excluded.indexOf(k) === -1; }).sort();
       holder.appendChild(el("div", { class: "settings-line wrap" }, [
         el("span", { class: "small muted", text: "Excluded districts" }),
-        el("span", { class: "chip-row small" }, excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " Ã—", onClick: function () { iv.scope.exclude = (scope.exclude || []).filter(function (x) { return x !== k; }); rebuild(); } })]); })),
+        el("span", { class: "chip-row small" }, excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = (scope.exclude || []).filter(function (x) { return x !== k; }); rebuild(); } })]); })),
         selEl([{ value: "", label: "+ exclude district..." }].concat(addable.map(function (k) { return { value: k, label: districtLabel(k) }; })), "", function (v) { if (v) { (iv.scope.exclude = iv.scope.exclude || []).push(v); rebuild(); } })
       ]));
       holder.appendChild(el("div", { class: "callout note" }, [
@@ -780,7 +780,7 @@ GMB.tabs = GMB.tabs || {};
     var byRegion = {};
     keys.forEach(function (k) { var r = k.split("|")[0]; (byRegion[r] = byRegion[r] || []).push(k); });
     var holder = el("div", {}), modalCtl, filterText = "";
-    function typeOptions(withInherit) { return (withInherit ? [{ value: "", label: "(inherit)" }] : [{ value: "", label: "â€” set all â€”" }]).concat(c.types.map(function (tp) { return { value: tp, label: tp }; })); }
+    function typeOptions(withInherit) { return (withInherit ? [{ value: "", label: "(inherit)" }] : [{ value: "", label: "- set all -" }]).concat(c.types.map(function (tp) { return { value: tp, label: tp }; })); }
     function cascadeType(region, type) { byRegion[region].forEach(function (k) { ensureGeo(iv, k).type = type; }); rebuild(); }
 
     function regionCommonYears(region) {
@@ -840,10 +840,10 @@ GMB.tabs = GMB.tabs || {};
     rebuild();
 
     modalCtl = G.ui.openModal({
-      title: c.nice + " â€” set by geography",
+      title: c.nice + " - set by geography",
       body: el("div", {}, [
-        el("p", { class: "muted small", style: "margin-top:0", text: "Set timing, coverage and target population by region (blue row â€” cascades to all its districts) or per district. Blank inputs use the intervention default." }),
-        (function () { var s = document.createElement("input"); s.type = "text"; s.placeholder = "Filter districtsâ€¦"; s.style.width = "220px"; s.style.marginBottom = "8px"; s.addEventListener("input", function () { filterText = s.value.toLowerCase(); rebuild(); }); return s; })(),
+        el("p", { class: "muted small", style: "margin-top:0", text: "Set timing, coverage and target population by region (blue row - cascades to all its districts) or per district. Blank inputs use the intervention default." }),
+        (function () { var s = document.createElement("input"); s.type = "text"; s.placeholder = "Filter districts..."; s.style.width = "220px"; s.style.marginBottom = "8px"; s.addEventListener("input", function () { filterText = s.value.toLowerCase(); rebuild(); }); return s; })(),
         holder
       ]),
       footer: [
@@ -860,7 +860,7 @@ GMB.tabs = GMB.tabs || {};
     var nIv = G.catalog.filter(function (c) { return current.interventions[c.code].enabled; }).length;
     var covered = Object.keys(coveredKeys(current, assignment)).length, lastYear = Math.max.apply(null, current.years);
     function line(l, v) { return el("div", { class: "sum-line" }, [el("span", { class: "muted", text: l }), el("strong", { text: v })]); }
-    p.appendChild(line("Years", current.years[0] + "â€“" + lastYear));
+    p.appendChild(line("Years", current.years[0] + "-" + lastYear));
     p.appendChild(line("Interventions on", nIv + " of " + G.catalog.length));
     p.appendChild(line("Districts covered", covered + " of 42"));
     p.appendChild(line("Projected pop " + lastYear, num(nationalPop(lastYear))));
@@ -884,8 +884,8 @@ GMB.tabs = GMB.tabs || {};
 
     // validation checks
     var checks = computeChecks(assignment);
-    var cb = el("div", { class: "checks " + (checks.length ? "has" : "ok") }, [el("div", { class: "small", style: "font-weight:600", text: checks.length ? ("âš  " + checks.length + " check" + (checks.length > 1 ? "s" : "")) : "âœ“ No issues" })]);
-    checks.forEach(function (m) { cb.appendChild(el("div", { class: "small", text: "â€¢ " + m })); });
+    var cb = el("div", { class: "checks " + (checks.length ? "has" : "ok") }, [el("div", { class: "small", style: "font-weight:600", text: checks.length ? ("Warning " + checks.length + " check" + (checks.length > 1 ? "s" : "")) : "OK No issues" })]);
+    checks.forEach(function (m) { cb.appendChild(el("div", { class: "small", text: "- " + m })); });
     p.appendChild(cb);
 
     var dirty = isDirty();
@@ -893,7 +893,7 @@ GMB.tabs = GMB.tabs || {};
     var discardBtn = el("button", { class: "btn secondary", style: "flex:1", onClick: function () { revertCurrent(); refresh(); } }, ["Discard changes"]);
     if (!dirty) { saveBtn.disabled = true; discardBtn.disabled = true; }
     p.appendChild(el("div", { style: "display:flex;gap:8px;margin-top:8px" }, [saveBtn, discardBtn]));
-    p.appendChild(el("div", { class: "save-state " + (dirty ? "dirty" : "clean") }, [el("span", { class: "dot" }), dirty ? (lastSavedJson === null ? "New scenario â€” not saved" : "Unsaved changes") : "All changes saved"]));
+    p.appendChild(el("div", { class: "save-state " + (dirty ? "dirty" : "clean") }, [el("span", { class: "dot" }), dirty ? (lastSavedJson === null ? "New scenario - not saved" : "Unsaved changes") : "All changes saved"]));
     if (flash) p.appendChild(el("div", { class: "small", style: "color:var(--green);margin-top:4px", text: flash }));
     p.appendChild(el("button", { class: "btn danger", style: "width:100%;margin-top:10px", onClick: deleteScenario }, ["Delete scenario"]));
     aside.appendChild(p);
@@ -903,21 +903,21 @@ GMB.tabs = GMB.tabs || {};
     var s = rootEl.querySelector(".save-state"); if (!s) return;
     var dirty = isDirty();
     s.className = "save-state " + (dirty ? "dirty" : "clean");
-    s.lastChild.textContent = dirty ? (lastSavedJson === null ? "New scenario â€” not saved" : "Unsaved changes") : "All changes saved";
+    s.lastChild.textContent = dirty ? (lastSavedJson === null ? "New scenario - not saved" : "Unsaved changes") : "All changes saved";
     rootEl.querySelectorAll(".scn-summary .btn").forEach(function (btn) { btn.disabled = !dirty; });
     var cb = rootEl.querySelector(".checks");
     if (cb) {
       var w = computeChecks(computeAssignment(current));
       cb.className = "checks " + (w.length ? "has" : "ok");
       cb.innerHTML = "";
-      cb.appendChild(el("div", { class: "small", style: "font-weight:600", text: w.length ? ("âš  " + w.length + " check" + (w.length > 1 ? "s" : "")) : "âœ“ No issues" }));
-      w.forEach(function (m) { cb.appendChild(el("div", { class: "small", text: "â€¢ " + m })); });
+      cb.appendChild(el("div", { class: "small", style: "font-weight:600", text: w.length ? ("Warning " + w.length + " check" + (w.length > 1 ? "s" : "")) : "OK No issues" }));
+      w.forEach(function (m) { cb.appendChild(el("div", { class: "small", text: "- " + m })); });
     }
   }
   function doSave() {
     var exists = G.store.get().scenarios.some(function (s) { return s.id === current.id; });
     if (exists) G.store.updateScenario(clone(current)); else G.store.addScenario(clone(current));
-    lastSavedJson = snap(); flash = "Saved â€œ" + current.name + "â€"; refresh();
+    lastSavedJson = snap(); flash = 'Saved "' + current.name + '"'; refresh();
   }
 
   // The five SNT scenarios are seeded as real, budget-able scenarios.
@@ -949,7 +949,7 @@ GMB.tabs = GMB.tabs || {};
   function loadFirstScenario() { var all = G.store.get().scenarios; var f = all.filter(function (s) { return s.template === "nsp"; })[0] || all[0]; if (f) { current = clone(f); lastSavedJson = snap(); } else { current = buildScenario("blank"); lastSavedJson = null; } }
   function deleteScenario() {
     var modal = G.ui.openModal({ title: "Delete scenario",
-      body: el("div", {}, [el("p", { class: "small", text: "Delete â€œ" + current.name + "â€? This cannot be undone." })]),
+      body: el("div", {}, [el("p", { class: "small", text: 'Delete "' + current.name + '"? This cannot be undone.' })]),
       footer: [el("button", { class: "linkbtn", onClick: function () { modal.close(); } }, ["Cancel"]),
         el("button", { class: "btn danger", onClick: function () { modal.close(); doDelete(); } }, ["Delete"])] });
   }
@@ -973,7 +973,7 @@ GMB.tabs = GMB.tabs || {};
       var scope = iv.scope.mode === "everywhere" ? "Everywhere" : iv.scope.mode === "strata" ? ("Strata: " + (iv.scope.strata || []).join(", ")) : "Custom";
       return [c.nice, iv.enabled ? "Yes" : "No", iv.type || "", scope, Object.keys(covered).length, cov, Math.round((iv.params.buffer || 0) * 100), (iv.activeYears || []).join(", "), Math.round(targ)];
     });
-    GMB.xlsx.download(safeFile(current.name), [{ name: "Scenario", title: current.name, meta: [["Description", current.description || ""], ["Plan years", current.years[0] + "â€“" + current.years[current.years.length - 1]]], columns: cols, rows: rows }]);
+    GMB.xlsx.download(safeFile(current.name), [{ name: "Scenario", title: current.name, meta: [["Description", current.description || ""], ["Plan years", current.years[0] + "-" + current.years[current.years.length - 1]]], columns: cols, rows: rows }]);
   }
   function computeChecks(assignment) {
     var w = [];
@@ -997,7 +997,7 @@ GMB.tabs = GMB.tabs || {};
     var modal;
     modal = G.ui.openModal({
       title: "Unsaved changes",
-      body: el("div", {}, [el("p", { class: "small", text: "You have unsaved changes to â€œ" + current.name + "â€. Save them before leaving?" })]),
+      body: el("div", {}, [el("p", { class: "small", text: 'You have unsaved changes to "' + current.name + '". Save them before leaving?' })]),
       footer: [
         el("button", { class: "linkbtn", onClick: function () { modal.close(); } }, ["Cancel"]),
         el("button", { class: "linkbtn", onClick: function () { modal.close(); revertCurrent(); proceed(); } }, ["Discard changes"]),

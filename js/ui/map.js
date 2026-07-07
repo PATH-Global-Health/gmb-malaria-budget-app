@@ -187,7 +187,10 @@ GMB.ui = GMB.ui || {};
   /** Build a map. opts.onClick(key, props). Returns { el, keys, setColors, setTitles, setStroke, setOutline }. */
   ui.gambiaMap = function (opts) {
     opts = opts || {};
-    return window.L ? leafletMap(opts) : svgMap(opts);
+    // Keep the proven SVG renderer active while Leaflet rendering is reviewed.
+    // The Leaflet code remains above, but the current GeoJSON-only Leaflet view
+    // can render blank in the hosted app for some users.
+    return svgMap(opts);
   };
 
   /** Export any inline SVG element or Leaflet map wrapper to a downloaded PNG. */
