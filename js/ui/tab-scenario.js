@@ -263,7 +263,7 @@ GMB.tabs = GMB.tabs || {};
     var main = el("div", { class: "scn-main" });
     main.appendChild(renderBasics());
     main.appendChild(renderStrata(assignment));
-    main.appendChild(el("div", { class: "scn-grid2" }, [renderMix(assignment), renderViewer(assignment)]));
+    main.appendChild(el("div", { class: "scn-grid2 scn-targeting-grid" }, [renderMix(assignment), renderViewer(assignment)]));
     main.appendChild(renderSpecs(assignment));
     layout.appendChild(main);
     layout.appendChild(renderSummary(assignment));
@@ -284,7 +284,9 @@ GMB.tabs = GMB.tabs || {};
       });
     }));
     var ord = { nsp: 0, bau: 1, optimistic: 2, realistic: 3, pessimistic: 4 };
-    var scns = G.store.get().scenarios.slice().sort(function (a, b) {
+    var scns = G.store.get().scenarios.slice().filter(function (s) {
+      return !/test scenario from lambda/i.test(s.name || "");
+    }).sort(function (a, b) {
       return (ord[a.template] != null ? ord[a.template] : 99) - (ord[b.template] != null ? ord[b.template] : 99);
     });
     var scnChips = el("div", { class: "chip-row" }, scns.map(function (s) {
@@ -325,7 +327,8 @@ GMB.tabs = GMB.tabs || {};
         current.strata.averagingYears.sort(function (a, b) { return a - b; }); refresh();
       });
     }));
-    p.appendChild(el("div", { class: "field" }, [el("label", { text: "Average incidence over years" }), avg]));
+    var strataControls = el("div", { class: "strata-controls" });
+    strataControls.appendChild(el("div", { class: "field" }, [el("label", { text: "Average incidence over years" }), avg]));
 
     var editor = el("div", { class: "band-editor" });
     current.strata.bands.forEach(function (b, i) {
@@ -339,9 +342,9 @@ GMB.tabs = GMB.tabs || {};
       editor.appendChild(el("div", { class: "band-row" }, [el("span", { class: "swatch", style: "background:" + b.color }), nameI, range, rm]));
     });
     editor.appendChild(el("button", { class: "linkbtn", style: "align-self:flex-start;margin-top:4px", onClick: addBand }, ["+ add stratum"]));
-    p.appendChild(editor);
+    strataControls.appendChild(editor);
 
-    var natPop = nationalPop(Math.max.apply(null, current.years)), counts = el("div", { class: "stat-grid" });
+    var natPop = nationalPop(Math.max.apply(null, current.years)), counts = el("div", { class: "stat-grid strata-stats" });
     bands.forEach(function (b) {
       var bk = assignment.result.byBand[b.id], pct = natPop ? Math.round(bk.population / natPop * 100) : 0;
       counts.appendChild(el("div", { class: "stat", style: "border-left:4px solid " + b.color }, [
@@ -349,7 +352,7 @@ GMB.tabs = GMB.tabs || {};
         el("div", { class: "label", html: G.util.esc(b.name) + " - " + num(bk.population) + " people - <b>" + pct + "%</b> of pop" })
       ]));
     });
-    p.appendChild(counts);
+    p.appendChild(el("div", { class: "strata-rule-layout" }, [strataControls, counts]));
     p.appendChild(el("div", { class: "map-toolbar" }, [
       el("div", { class: "chip-row small" }, bands.map(function (b) { return el("span", {}, [el("span", { class: "swatch", style: "background:" + b.color }), " " + b.name]); })),
       G.ui.downloadButton(function () { return mapApi.el; }, "gambia-strata.png", "Download map")
@@ -389,7 +392,7 @@ GMB.tabs = GMB.tabs || {};
   }
 
   function renderMix(assignment) {
-    var bands = assignment.bands, p = el("div", { class: "panel" });
+    var bands = assignment.bands, p = el("div", { class: "panel mix-panel" });
     p.appendChild(el("div", { class: "scn-h" }, [el("span", { class: "scn-step", text: "3" }), "Intervention mix by stratum"]));
     p.appendChild(el("p", { class: "muted small", text: "Turn interventions on and choose the base strata. Use Edit targeting for manual district or region inclusions/exclusions." }));
     var table = el("table", { class: "iv-table" });
@@ -745,7 +748,8 @@ GMB.tabs = GMB.tabs || {};
   function removeValue(arr, value) { return (arr || []).filter(function (x) { return x !== value; }); }
   function removeMany(arr, values) { var set = {}; values.forEach(function (v) { set[v] = true; }); return (arr || []).filter(function (x) { return !set[x]; }); }
   function openTargetingModal(c, iv) {
-    var assignment = computeAssignment(current), holder = el("div", {}), ctl, selectedKey = null, showExcluded = false;
+    var assignment = computeAssignment(current), holder = el("div", {}), ctl;
+    var selectedKeys = {}, regionPick = "", regionAction = "include", districtPick = "", districtAction = "include";
     if (!iv.scope) iv.scope = { mode: "strata", strata: assignment.bands.map(function (b) { return b.id; }) };
     if (!iv.scope.exclude) iv.scope.exclude = [];
     if (!iv.scope.includeRegions) iv.scope.includeRegions = [];
@@ -755,7 +759,8 @@ GMB.tabs = GMB.tabs || {};
       iv.scope.exclude = removeValue(iv.scope.exclude, k);
     }
     function includeDistrict(k) {
-      iv.scope.includeDistricts = addUnique(removeValue(iv.scope.includeDistricts, k), k);
+      var base = baseTargetKeys(iv, assignment);
+      iv.scope.includeDistricts = base[k] ? removeValue(iv.scope.includeDistricts, k) : addUnique(removeValue(iv.scope.includeDistricts, k), k);
       iv.scope.exclude = removeValue(iv.scope.exclude, k);
     }
     function excludeDistrict(k) {
@@ -775,6 +780,27 @@ GMB.tabs = GMB.tabs || {};
     function clearRegion(region) {
       iv.scope.includeRegions = removeValue(iv.scope.includeRegions, region);
       iv.scope.exclude = removeMany(iv.scope.exclude, regionDistrictKeys(region));
+    }
+    function selectedList() { return Object.keys(selectedKeys).sort(); }
+    function selectDistrict(k) { if (!k) return; selectedKeys[k] ? delete selectedKeys[k] : selectedKeys[k] = true; }
+    function buttonAttrs(cls, disabled, onClick) {
+      var attrs = { class: cls, onClick: onClick };
+      if (disabled) attrs.disabled = "disabled";
+      return attrs;
+    }
+    function applyDistrictAction() {
+      var ks = selectedList();
+      ks.forEach(function (k) { districtAction === "include" ? includeDistrict(k) : excludeDistrict(k); });
+      rebuild();
+    }
+    function clearSelectedDistrictChanges() {
+      selectedList().forEach(clearDistrict);
+      rebuild();
+    }
+    function applyRegionAction() {
+      if (!regionPick) return;
+      regionAction === "include" ? includeRegion(regionPick) : excludeRegion(regionPick);
+      rebuild();
     }
     function rebuild() {
       assignment = computeAssignment(current);
@@ -818,14 +844,15 @@ GMB.tabs = GMB.tabs || {};
       }
       holder.appendChild(el("div", { class: "callout note" }, [
         el("div", { class: "callout-title", text: "Manual targeting changes" }),
-        el("p", { class: "callout-text", text: "Use this only when the final targeted districts differ from the base rule. You can add or exclude a whole region, or select one district on the map and choose an action." })
+        el("p", { class: "callout-text", text: "Use this only when the final targeted districts differ from the base rule. Add or exclude a whole region, or select one or more districts on the map and apply a district action." })
       ]));
       var regions = G.reference.regions().sort();
       holder.appendChild(el("div", { class: "settings-line wrap" }, [
         el("span", { class: "small muted", text: "Region action" }),
-        selEl([{ value: "", label: "+ include full region..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { includeRegion(v); rebuild(); } }),
-        selEl([{ value: "", label: "- exclude full region..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { excludeRegion(v); rebuild(); } }),
-        selEl([{ value: "", label: "clear region manual changes..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), "", function (v) { if (v) { clearRegion(v); rebuild(); } })
+        selEl([{ value: "", label: "Select region..." }].concat(regions.map(function (r) { return { value: r, label: r }; })), regionPick, function (v) { regionPick = v; rebuild(); }),
+        selEl([{ value: "include", label: "Include" }, { value: "exclude", label: "Exclude" }], regionAction, function (v) { regionAction = v; rebuild(); }),
+        el("button", buttonAttrs("btn tiny", !regionPick, applyRegionAction), ["Apply"]),
+        el("button", buttonAttrs("linkbtn tiny", !regionPick, function () { clearRegion(regionPick); rebuild(); }), ["Clear region changes"])
       ]));
       var additionChips = (scope.includeRegions || []).map(function (r) {
         return el("span", { class: "chip removable" }, [r, el("span", { class: "x", text: " x", onClick: function () { iv.scope.includeRegions = removeValue(scope.includeRegions, r); rebuild(); } })]);
@@ -840,20 +867,21 @@ GMB.tabs = GMB.tabs || {};
         el("span", { class: "small muted", text: "Manual exclusions" }),
         el("span", { class: "chip-row small" }, excluded.length ? excluded.map(function (k) { return el("span", { class: "chip removable" }, [districtLabel(k), el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = removeValue(scope.exclude, k); rebuild(); } })]); }) : ["None"])
       ]));
-      var map = G.ui.gambiaMap({ onClick: function (k) { selectedKey = k; rebuild(); } });
+      var map = G.ui.gambiaMap({ onClick: function (k) { selectDistrict(k); rebuild(); } });
       map.setColors(function (k) {
         if (withAdds[k] && !covered[k]) return TARGET_COLORS.excluded;
         if (withAdds[k] && !base[k]) return TARGET_COLORS.added;
         if (base[k]) return TARGET_COLORS.base;
         return TARGET_COLORS.none;
       });
-      map.setOutline(function (k) { return k === selectedKey; });
-      map.setStroke(function (k) { return k === selectedKey ? TARGET_COLORS.selected : ""; });
+      map.setOutline(function (k) { return !!selectedKeys[k]; });
+      map.setStroke(function (k) { return selectedKeys[k] ? TARGET_COLORS.selected : ""; });
       map.setTitles(function (k, pr) {
         var status = withAdds[k] && !covered[k] ? "manually excluded" : withAdds[k] && !base[k] ? "manually added" : base[k] ? "targeted by base rule" : "not targeted";
         return pr.adm2 + " (" + pr.adm1 + ") - " + status;
       });
-      var selected = selectedKey ? districtLabel(selectedKey) : "Click a district on the map";
+      var selected = selectedList();
+      var selectedText = selected.length ? selected.map(districtLabel).join("; ") : "Click one or more districts on the map";
       holder.appendChild(el("div", { class: "targeting-modal-grid" }, [
         el("div", {}, [
           el("div", { class: "map-toolbar" }, [
@@ -868,13 +896,18 @@ GMB.tabs = GMB.tabs || {};
         ]),
         el("div", { class: "targeting-actions" }, [
           el("div", { class: "callout info" }, [
-            el("div", { class: "callout-title", text: "Selected district" }),
-            el("p", { class: "callout-text", text: selected })
+            el("div", { class: "callout-title", text: "Selected districts" }),
+            el("p", { class: "callout-text", text: selectedText })
           ]),
-          el("button", { class: "btn", disabled: !selectedKey, onClick: function () { includeDistrict(selectedKey); rebuild(); } }, ["Include selected district"]),
-          el("button", { class: "btn secondary", disabled: !selectedKey, onClick: function () { excludeDistrict(selectedKey); rebuild(); } }, ["Exclude selected district"]),
-          el("button", { class: "linkbtn", disabled: !selectedKey, onClick: function () { clearDistrict(selectedKey); rebuild(); } }, ["Clear selected district change"]),
-          el("div", { class: "small muted", text: "District actions are deliberate: click a district first, then choose include, exclude, or clear." })
+          el("div", { class: "settings-line wrap targeting-action-row" }, [
+            el("span", { class: "small muted", text: "District action" }),
+            selEl([{ value: "", label: "+ add district to selection..." }].concat(allDistrictKeys().filter(function (k) { return !selectedKeys[k]; }).map(function (k) { return { value: k, label: districtLabel(k) }; })), districtPick, function (v) { if (v) { districtPick = ""; selectDistrict(v); rebuild(); } }),
+            selEl([{ value: "include", label: "Include" }, { value: "exclude", label: "Exclude" }], districtAction, function (v) { districtAction = v; rebuild(); })
+          ]),
+          el("button", buttonAttrs("btn", !selected.length, applyDistrictAction), ["Apply to selected districts"]),
+          el("button", buttonAttrs("linkbtn", !selected.length, function () { selectedKeys = {}; rebuild(); }), ["Clear selection"]),
+          el("button", buttonAttrs("linkbtn", !selected.length, clearSelectedDistrictChanges), ["Clear selected district changes"]),
+          el("div", { class: "small muted", text: "Click multiple districts to build a selection. The action is only applied when you press Apply." })
         ])
       ]));
       holder.appendChild(el("div", { class: "callout note" }, [
@@ -887,7 +920,7 @@ GMB.tabs = GMB.tabs || {};
       title: c.nice + " - targeting override",
       body: holder,
       footer: [
-        el("button", { class: "linkbtn", onClick: function () { iv.scope.exclude = []; iv.scope.includeRegions = []; iv.scope.includeDistricts = []; selectedKey = null; rebuild(); } }, ["Clear manual changes"]),
+        el("button", { class: "linkbtn", onClick: function () { iv.scope.exclude = []; iv.scope.includeRegions = []; iv.scope.includeDistricts = []; selectedKeys = {}; rebuild(); } }, ["Clear manual changes"]),
         el("button", { class: "btn", onClick: function () { ctl.close(); } }, ["Done"])
       ],
       onClose: function () { refresh(); }
