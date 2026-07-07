@@ -1,4 +1,4 @@
-/* Data viewer — population (with projected growth) and malaria incidence.
+/* Data viewer â€” population (with projected growth) and malaria incidence.
    Rendered inside the Methods tab via GMB.dataViewer.render(container, which).
    Read-only; uses GMB.reference + GMB.assumptions + the chart/map helpers. */
 window.GMB = window.GMB || {};
@@ -15,7 +15,7 @@ window.GMB = window.GMB || {};
   function incYears() { return Array.from(new Set((G.data.incidence || []).map(function (r) { return r.year; }))).sort(function (a, b) { return a - b; }); }
   function fmtN(n) { return U.fmtNum(n); }
   function shortN(n) { var a = Math.abs(n); if (a >= 1e6) return (n / 1e6).toFixed(1) + "M"; if (a >= 1e3) return Math.round(n / 1e3) + "K"; return String(Math.round(n)); }
-  function stratum(v) { return v == null ? "—" : v < 10 ? "Low" : v < 30 ? "Medium" : "High"; }
+  function stratum(v) { return v == null ? "â€”" : v < 10 ? "Low" : v < 30 ? "Medium" : "High"; }
 
   function popAt(year) {
     if (level === "national") { var t = 0; pairs().forEach(function (d) { t += A.population(d.adm1, d.adm2, year, growth); }); return t; }
@@ -25,7 +25,7 @@ window.GMB = window.GMB || {};
   }
   function popData() { var ys = [], i; for (i = 2017; i <= endYear; i++) ys.push(i); var split = ys.indexOf(2026); if (split < 0) split = ys.length; return { years: ys, values: ys.map(popAt), splitIndex: split }; }
   function regionPop(adm1, year) { var t = 0; districtsOf(adm1).forEach(function (d2) { t += ref.population(adm1, d2, year); }); return t; }
-  function scopeName() { return level === "national" ? "The Gambia — national" : level === "region" ? (selRegion || "—") : (selDistrict ? selDistrict + " (" + selRegion + ")" : "—"); }
+  function scopeName() { return level === "national" ? "The Gambia â€” national" : level === "region" ? (selRegion || "â€”") : (selDistrict ? selDistrict + " (" + selRegion + ")" : "â€”"); }
 
   function seg(options, val, on) { return el("div", { class: "seg" }, options.map(function (o) { return el("span", { class: "seg-opt" + (o.value === val ? " on" : ""), role: "button", tabindex: "0", onClick: function () { on(o.value); } }, [o.label]); })); }
   function selBox(options, value, on) { var s = document.createElement("select"); options.forEach(function (o) { var op = document.createElement("option"); op.value = o.value; op.textContent = o.label; if (o.value === value) op.selected = true; s.appendChild(op); }); s.addEventListener("change", function () { on(s.value); }); return s; }
@@ -62,8 +62,8 @@ window.GMB = window.GMB || {};
   function renderPopulation() {
     var frag = document.createDocumentFragment();
     var d = popData(), pop2025 = popAt(2025), popEnd = popAt(endYear), pct = pop2025 ? Math.round((popEnd / pop2025 - 1) * 100) : 0;
-    frag.appendChild(el("div", { class: "panel" }, [el("div", { class: "scn-h", text: "Population — " + scopeName() }),
-      el("div", { class: "stat-grid" }, [stat(fmtN(pop2025), "Population in 2025 (observed)"), stat(fmtN(popEnd), "Projected in " + endYear), stat((pct >= 0 ? "+" : "") + pct + "%", "Change 2025 → " + endYear), stat((growth * 100).toFixed(1) + "%", "Growth rate / year")])]));
+    frag.appendChild(el("div", { class: "panel" }, [el("div", { class: "scn-h", text: "Population â€” " + scopeName() }),
+      el("div", { class: "stat-grid" }, [stat(fmtN(pop2025), "Population in 2025 (observed)"), stat(fmtN(popEnd), "Projected in " + endYear), stat((pct >= 0 ? "+" : "") + pct + "%", "Change 2025 â†’ " + endYear), stat((growth * 100).toFixed(1) + "%", "Growth rate / year")])]));
     function chart(exp) { return C.line({ years: d.years, series: [{ label: "Population", color: "#0c1c8c", values: d.values }], splitIndex: d.splitIndex, fmtFull: fmtN, fmtShort: shortN, export: exp }); }
     frag.appendChild(card("Population over time", el("div", { class: "line-cap" }, [chart(false)]), dlPng(function () { return chart(true); }, "population-trend.png"), G.ui.expandPlot("Population over time", chart)));
     var headers = ["Year", "Population", "Status"];
@@ -71,7 +71,7 @@ window.GMB = window.GMB || {};
     d.years.forEach(function (y, i) { t.appendChild(el("tr", {}, [el("td", { text: String(y) }), el("td", { class: "num", text: fmtN(d.values[i]) }), el("td", { class: "muted small", text: y <= 2025 ? "observed" : "projected" })])); });
     var dl = el("button", { class: "linkbtn dl-btn", onClick: function () {
       var rows = d.years.map(function (y, i) { return [y, Math.round(d.values[i]), y <= 2025 ? "observed" : "projected"]; });
-      G.util.downloadText("population.csv", U.toCsv([], [["The Gambia Malaria Budgeting Tool"], ["Population — " + scopeName()], ["Growth rate", (growth * 100).toFixed(1) + "% per year"], []]) + "\r\n" + U.toCsv(headers, rows), "text/csv");
+      G.util.downloadText("population.csv", U.toCsv([], [["The Gambia Malaria Budgeting Tool"], ["Population â€” " + scopeName()], ["Growth rate", (growth * 100).toFixed(1) + "% per year"], []]) + "\r\n" + U.toCsv(headers, rows), "text/csv");
     } }, ["Download CSV"]);
     frag.appendChild(card("Year-by-year", el("div", { class: "table-scroll" }, [t]), dl));
     return frag;
@@ -83,21 +83,25 @@ window.GMB = window.GMB || {};
     var byKey = {}, vals = [];
     pairs().forEach(function (p) { var v = ref.incidence(p.adm1, p.adm2, incYear); byKey[p.adm1 + "|" + p.adm2] = v; if (v != null) vals.push(v); });
     var min = vals.length ? Math.min.apply(null, vals) : 0, max = vals.length ? Math.max.apply(null, vals) : 1;
-    var map = G.ui.gambiaMap({});
-    map.setColors(function (k) { var v = byKey[k]; return v == null ? "#eef0f4" : C.rampGYR(max > min ? (v - min) / (max - min) : 0.5); });
-    map.setTitles(function (k, props) { var v = byKey[k]; return props.adm2 + " (" + props.adm1 + "): " + (v == null ? "no data" : v.toFixed(1) + " / 1,000 · " + stratum(v)); });
-    C.attachMapLegend(map.el, { kind: "gradient", stops: C.GYR_STOPS, min: min, max: max, fmt: function (n) { return n.toFixed(0); }, label: "Cases per 1,000 (" + incYear + ")" });
-    frag.appendChild(card("Malaria incidence — " + incYear, el("div", { class: "map-wrap" }, [map.el]), dlPng(function () { return map.el; }, "incidence-" + incYear + ".png"), G.ui.expandPlot("Malaria incidence " + incYear, function () { return map.el.cloneNode(true); })));
+    function buildMap() {
+      var map = G.ui.gambiaMap({});
+      map.setColors(function (k) { var v = byKey[k]; return v == null ? "#eef0f4" : C.rampGYR(max > min ? (v - min) / (max - min) : 0.5); });
+      map.setTitles(function (k, props) { var v = byKey[k]; return props.adm2 + " (" + props.adm1 + "): " + (v == null ? "no data" : v.toFixed(1) + " / 1,000 - " + stratum(v)); });
+      C.attachMapLegend(map.el, { kind: "gradient", stops: C.GYR_STOPS, min: min, max: max, fmt: function (n) { return n.toFixed(0); }, label: "Cases per 1,000 (" + incYear + ")" });
+      return map;
+    }
+    var map = buildMap();
+    frag.appendChild(card("Malaria incidence - " + incYear, el("div", { class: "map-wrap" }, [map.el]), dlPng(function () { return map.el; }, "incidence-" + incYear + ".png"), G.ui.expandPlot("Malaria incidence " + incYear, function () { return buildMap().el; })));
 
     var rows = pairs().map(function (p) { return { adm1: p.adm1, adm2: p.adm2, v: byKey[p.adm1 + "|" + p.adm2] }; }).sort(function (a, b) { return (b.v || -1) - (a.v || -1); });
     var headers = ["Region", "District", "Cases / 1,000", "Stratum"];
     var t = el("table", { class: "data-table" }, [el("tr", {}, [el("th", { text: "Region" }), el("th", { text: "District" }), el("th", { class: "num", text: "Cases / 1,000" }), el("th", { text: "Stratum" })])]);
-    rows.forEach(function (r) { t.appendChild(el("tr", {}, [el("td", { text: r.adm1 }), el("td", { text: r.adm2 }), el("td", { class: "num", text: r.v == null ? "—" : r.v.toFixed(1) }), el("td", {}, [el("span", { class: "strat-badge " + (r.v == null ? "" : stratum(r.v).toLowerCase()), text: stratum(r.v) })])])); });
+    rows.forEach(function (r) { t.appendChild(el("tr", {}, [el("td", { text: r.adm1 }), el("td", { text: r.adm2 }), el("td", { class: "num", text: r.v == null ? "â€”" : r.v.toFixed(1) }), el("td", {}, [el("span", { class: "strat-badge " + (r.v == null ? "" : stratum(r.v).toLowerCase()), text: stratum(r.v) })])])); });
     var dl = el("button", { class: "linkbtn dl-btn", onClick: function () {
       var crows = rows.map(function (r) { return [r.adm1, r.adm2, r.v == null ? "" : Math.round(r.v * 10) / 10, stratum(r.v)]; });
       G.util.downloadText("incidence-" + incYear + ".csv", U.toCsv([], [["The Gambia Malaria Budgeting Tool"], ["Malaria incidence " + incYear + " (cases per 1,000)"], []]) + "\r\n" + U.toCsv(headers, crows), "text/csv");
     } }, ["Download CSV"]);
-    frag.appendChild(card("Incidence by district — " + incYear, el("div", { class: "table-scroll" }, [t]), dl));
+    frag.appendChild(card("Incidence by district â€” " + incYear, el("div", { class: "table-scroll" }, [t]), dl));
     return frag;
   }
 
@@ -106,7 +110,7 @@ window.GMB = window.GMB || {};
     var frag = document.createDocumentFragment(), year = hhYear;
     var rows = regions().map(function (r) { var pop = regionPop(r, year), size = A.householdSize(r); return { region: r, size: size, pop: pop, hh: pop / size }; });
     var totalPop = rows.reduce(function (a, b) { return a + b.pop; }, 0), totalHH = rows.reduce(function (a, b) { return a + b.hh; }, 0);
-    frag.appendChild(el("div", { class: "panel" }, [el("div", { class: "scn-h", text: "Households — The Gambia (" + year + ")" }),
+    frag.appendChild(el("div", { class: "panel" }, [el("div", { class: "scn-h", text: "Households â€” The Gambia (" + year + ")" }),
       el("div", { class: "stat-grid" }, [stat(fmtN(totalHH), "Households (total)"), stat(fmtN(totalPop), "Population"), stat((totalPop / totalHH).toFixed(1), "Avg household size")])]));
     function chart(exp) { var items = rows.slice().sort(function (a, b) { return b.hh - a.hh; }).map(function (r) { return { label: r.region, value: r.hh, color: "#0c1c8c" }; }); return C.hbars({ items: items, fmtFull: fmtN, fmtShort: shortN, export: exp }); }
     frag.appendChild(card("Households by region", el("div", { class: "line-cap" }, [chart(false)]), dlPng(function () { return chart(true); }, "households-by-region.png"), G.ui.expandPlot("Households by region", chart)));
@@ -118,8 +122,8 @@ window.GMB = window.GMB || {};
       var crows = rows.map(function (r) { return [r.region, r.size, Math.round(r.pop), Math.round(r.hh)]; }); crows.push(["TOTAL", "", Math.round(totalPop), Math.round(totalHH)]);
       G.util.downloadText("households-" + year + ".csv", U.toCsv([], [["The Gambia Malaria Budgeting Tool"], ["Households " + year], []]) + "\r\n" + U.toCsv(headers, crows), "text/csv");
     } }, ["Download CSV"]);
-    frag.appendChild(card("Households by region — " + year, el("div", { class: "table-scroll" }, [t]), dl));
-    frag.appendChild(el("div", { class: "callout note" }, [el("div", { class: "callout-title", text: "How households are derived" }), el("p", { class: "callout-text", text: "Households = population ÷ the region's average household size (from the national household survey). IRS quantities are based on the number of households." })]));
+    frag.appendChild(card("Households by region â€” " + year, el("div", { class: "table-scroll" }, [t]), dl));
+    frag.appendChild(el("div", { class: "callout note" }, [el("div", { class: "callout-title", text: "How households are derived" }), el("p", { class: "callout-text", text: "Households = population Ã· the region's average household size (from the national household survey). IRS quantities are based on the number of households." })]));
     return frag;
   }
 

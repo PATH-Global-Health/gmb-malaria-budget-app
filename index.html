@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Gambia Malaria Budgeting Tool</title>
-  <link rel="stylesheet" href="css/base.css?v=8" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/base.css?v=9" />
 </head>
 <body>
   <header class="app-header">
@@ -40,34 +41,35 @@
   <!-- Core -->
   <script src="js/util/format.js"></script>
   <script src="js/util/xlsx.js?v=4"></script>
-  <script src="js/util/budget-export.js?v=5"></script>
+  <script src="js/util/budget-export.js?v=6"></script>
   <script src="js/data/reference.js"></script>
   <script src="js/data/assumptions.js"></script>
   <script src="js/data/strata.js"></script>
-  <script src="js/data/catalog.js?v=5"></script>
-  <script src="js/content/help.js?v=9"></script>
+  <script src="js/data/catalog.js?v=6"></script>
+  <script src="js/content/help.js?v=10"></script>
   <script src="js/state/store.js?v=2"></script>
   <script src="js/state/cloud.js?v=9"></script>
   <script src="js/state/persistence.js?v=5"></script>
   <script src="js/ui/components.js?v=4"></script>
-  <script src="js/ui/map.js?v=2"></script>
-  <script src="js/ui/charts.js?v=17"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/ui/map.js?v=3"></script>
+  <script src="js/ui/charts.js?v=18"></script>
 
   <!-- Budget engine (pure) -->
-  <script src="js/engine/quantification.js?v=6"></script>
+  <script src="js/engine/quantification.js?v=7"></script>
   <script src="js/engine/costing.js?v=5"></script>
   <script src="js/engine/aggregate.js?v=3"></script>
-  <script src="js/engine/index.js?v=7"></script>
+  <script src="js/engine/index.js?v=8"></script>
 
   <!-- Tabs -->
-  <script src="js/ui/tab-overview.js?v=5"></script>
+  <script src="js/ui/tab-overview.js?v=6"></script>
   <script src="js/ui/tab-methods.js?v=6"></script>
   <script src="js/ui/tab-data.js?v=4"></script>
-  <script src="js/ui/tab-scenario.js?v=6"></script>
+  <script src="js/ui/tab-scenario.js?v=7"></script>
   <script src="js/ui/tab-costs.js?v=5"></script>
   <script src="js/ui/tab-generate.js?v=14"></script>
-  <script src="js/ui/tab-viz.js?v=17"></script>
-  <script src="js/ui/tab-compare.js?v=12"></script>
+  <script src="js/ui/tab-viz.js?v=18"></script>
+  <script src="js/ui/tab-compare.js?v=13"></script>
 
   <!-- App -->
   <script src="js/router.js?v=3"></script>

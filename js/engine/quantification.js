@@ -54,13 +54,23 @@ GMB.engine = GMB.engine || {};
   function coverageSum(iv, ctx, prefix) {
     return [1, 2, 3, 4].reduce(function (a, k) { return a + (rcov(iv, ctx, prefix + k) || 0); }, 0);
   }
-  function ceaseReductionPct(L, LD) {
-    if (L.ceaseReduction != null) return L.ceaseReduction;
-    if (L.ceaseMonths != null) {
-      var baseMonths = LD.ceaseMonths || 1, baseReduction = LD.ceaseReduction || 0;
-      return Math.max(0, Math.min(100, (Number(L.ceaseMonths) || 0) * baseReduction / baseMonths));
-    }
-    return LD.ceaseReduction || 0;
+  function massCampaignIntervalMonths(scn) {
+    var mii = scn && scn.interventions && scn.interventions.mii;
+    var camp = mii && mii.campaign;
+    var years = camp && camp.mode === "recurring" ? Math.max(1, Number(camp.everyYears) || 3) : 3;
+    return years * 12;
+  }
+  function ceaseReductionPct(L, scn) {
+    var months = L.ceaseMonths != null ? Number(L.ceaseMonths) : ((G.assumptions.leverDefaults || {}).ceaseMonths || 0);
+    var denom = massCampaignIntervalMonths(scn) || 36;
+    return Math.max(0, Math.min(100, (Math.max(0, months || 0) / denom) * 100));
+  }
+  function peoplePerNet(iv) {
+    var cap = iv.params.people_per_net_cap;
+    if (String(cap) === "3") return 2.7;
+    if (String(cap) === "2") return 1.8;
+    var old = Number(iv.params.people_per_net) || 1.8;
+    return old > 2 ? 2.7 : 1.8;
   }
   function coveredPop(code, tp, iv, ctx) {
     var L = iv.levers || {};
@@ -72,7 +82,8 @@ GMB.engine = GMB.engine || {};
   // commodity quantity for one district-year, before levers
   function qty(code, tp, iv, ctx) {
     var buf = 1 + (iv.params.buffer || 0), L = iv.levers || {};
-    if (code === "mii" || code === "mii_routine") { var ppn = iv.params.people_per_net || 1; return tp * (rcov(iv, ctx) || 0) / ppn * buf; }
+    if (code === "mii") return tp * (rcov(iv, ctx) || 0) / peoplePerNet(iv) * buf;
+    if (code === "mii_routine") { var ppn = iv.params.people_per_net || 1; return tp * (rcov(iv, ctx) || 0) / ppn * buf; }
     if (code === "irs") { var cov = L.reactive ? (L.reactiveCoverage != null ? L.reactiveCoverage : ((G.assumptions.leverDefaults || {}).reactiveCoverage || 0)) : (rcov(iv, ctx) || 0); return tp * cov * buf; }
     if (code === "smc" || code === "iptsc") { return tp * (rcov(iv, ctx) || 0) * (iv.params.cycles || 1) * buf; }
     if (code === "vax") return tp * coverageSum(iv, ctx, "dose") * buf;
@@ -92,7 +103,7 @@ GMB.engine = GMB.engine || {};
     }
     if (code === "mii_routine" && L.ceaseAfterCampaign) {
       var mii = scn.interventions.mii;
-      if (mii) { var camp = activeYears(mii, key) || scn.years; if (camp.indexOf(year) !== -1) q *= (1 - ceaseReductionPct(L, LD) / 100); }
+      if (mii) { var camp = activeYears(mii, key) || scn.years; if (camp.indexOf(year) !== -1) q *= (1 - ceaseReductionPct(L, scn) / 100); }
     }
     return q;
   }

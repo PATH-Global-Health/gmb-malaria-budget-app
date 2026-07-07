@@ -47,9 +47,11 @@ GMB.tabs = GMB.tabs || {};
   function avail(b) {
     var rows = b.costRows || [], yrs = {}, ivs = {}, cls = {}, regs = {}, dis = {};
     rows.forEach(function (r) { yrs[r.year] = 1; ivs[r.intervention_code] = 1; cls[r.cost_class] = 1; regs[r.adm1] = 1; dis[r.adm1 + "|" + r.adm2] = 1; });
+    var orderedIv = G.catalog.concat(G.legacyCatalog || []).map(function (c) { return c.code; }).filter(function (c) { return ivs[c]; });
+    Object.keys(ivs).sort().forEach(function (c) { if (orderedIv.indexOf(c) === -1) orderedIv.push(c); });
     return {
       years: Object.keys(yrs).map(Number).sort(function (a, b) { return a - b; }),
-      interventions: G.catalog.map(function (c) { return c.code; }).filter(function (c) { return ivs[c]; }),
+      interventions: orderedIv,
       costClasses: Object.keys(cls).sort(), regions: Object.keys(regs).sort(), districts: Object.keys(dis).sort()
     };
   }
@@ -196,20 +198,30 @@ GMB.tabs = GMB.tabs || {};
     var rows = filteredNoGeo(b), vf = valField();
     var pkg = {}; // districtKey -> { set }
     rows.forEach(function (r) { var k = r.adm1 + "|" + r.adm2; (pkg[k] = pkg[k] || {})[r.intervention_code] = true; });
+    var orderIv = G.catalog.concat(G.legacyCatalog || []).map(function (c) { return c.code; });
     function inScope(k) { return f.regions[k.split("|")[0]] && f.districts[k]; }
-    function comboKey(k) { var s = pkg[k]; if (!s) return ""; return G.catalog.map(function (c) { return c.code; }).filter(function (c) { return s[c]; }).join(","); }
+    function comboKey(k) {
+      var s = pkg[k]; if (!s) return "";
+      var out = orderIv.filter(function (c) { return s[c]; });
+      Object.keys(s).sort().forEach(function (c) { if (out.indexOf(c) === -1) out.push(c); });
+      return out.join(",");
+    }
     var counts = {}; G.reference.districtPairs().forEach(function (d) { var k = d.adm1 + "|" + d.adm2; if (inScope(k)) { var ck = comboKey(k); if (ck) counts[ck] = (counts[ck] || 0) + 1; } });
     var combos = Object.keys(counts).sort(function (x, y) { return counts[y] - counts[x]; });
     var color = {}; combos.forEach(function (ck, i) { color[ck] = C.mixColor(i); });
     function comboLabel(ck) { return ck.split(",").map(function (c) { return shortIv(c); }).join(" + ") || "—"; }
 
-    var map = G.ui.gambiaMap({});
-    map.setColors(function (k) { if (!inScope(k)) return "#eef0f4"; var ck = comboKey(k); return ck ? color[ck] : "#dfe5ee"; });
-    map.setTitles(function (k, props) { return props.adm2 + " (" + props.adm1 + "): " + (inScope(k) ? comboLabel(comboKey(k)) : "filtered out"); });
-    var gf = geoFiltered(); map.setOutline(function (k) { return gf && inScope(k); });
-    if (combos.length) C.attachMapLegend(map.el, { kind: "swatch", items: combos.map(function (ck) { return { label: comboLabel(ck) + " (" + counts[ck] + ")", color: color[ck] }; }) });
+    function buildMap() {
+      var map = G.ui.gambiaMap({});
+      map.setColors(function (k) { if (!inScope(k)) return "#eef0f4"; var ck = comboKey(k); return ck ? color[ck] : "#dfe5ee"; });
+      map.setTitles(function (k, props) { return props.adm2 + " (" + props.adm1 + "): " + (inScope(k) ? comboLabel(comboKey(k)) : "filtered out"); });
+      var gf = geoFiltered(); map.setOutline(function (k) { return gf && inScope(k); });
+      if (combos.length) C.attachMapLegend(map.el, { kind: "swatch", items: combos.map(function (ck) { return { label: comboLabel(ck) + " (" + counts[ck] + ")", color: color[ck] }; }) });
+      return map;
+    }
+    var map = buildMap();
 
-    return card("Intervention mix", null, el("div", { class: "map-wrap" }, [map.el]), dlPng(function () { return map.el; }, "intervention-mix.png"), G.ui.expandPlot("Intervention mix", function () { return map.el.cloneNode(true); }));
+    return card("Intervention mix", null, el("div", { class: "map-wrap" }, [map.el]), dlPng(function () { return map.el; }, "intervention-mix.png"), G.ui.expandPlot("Intervention mix", function () { return buildMap().el; }));
   }
 
   function renderValueCards(b) {
@@ -443,16 +455,20 @@ GMB.tabs = GMB.tabs || {};
     var vals = G.reference.districtPairs().map(function (d) { return d.adm1 + "|" + d.adm2; }).filter(inScope).map(areaVal);
     var min = vals.length ? Math.min.apply(null, vals) : 0, max = vals.length ? Math.max.apply(null, vals) : 1;
     function colorOf(k) { if (!inScope(k)) return "#eef0f4"; return C.rampYlOrRd(max > min ? (areaVal(k) - min) / (max - min) : 0.5); }
-    var map = G.ui.gambiaMap({});
-    map.setColors(colorOf);
-    map.setTitles(function (k, props) { var lab = lvl === "region" ? props.adm1 : props.adm2 + " (" + props.adm1 + ")"; var v = areaVal(k); return lab + ": " + (metric === "perperson" ? money(v) + " / person" : money(v)) + (inScope(k) ? "" : " (filtered out)"); });
-    if (lvl === "region") map.setStroke(colorOf);   // region-only view: hide internal district borders
-    else { var gf = geoFiltered(); map.setOutline(function (k) { return gf && inScope(k); }); }
-    C.attachMapLegend(map.el, { kind: "gradient", min: min, max: max, fmt: moneyShort, label: (metric === "perperson" ? "Cost per person" : "Total cost") });
+    function buildMap() {
+      var map = G.ui.gambiaMap({});
+      map.setColors(colorOf);
+      map.setTitles(function (k, props) { var lab = lvl === "region" ? props.adm1 : props.adm2 + " (" + props.adm1 + ")"; var v = areaVal(k); return lab + ": " + (metric === "perperson" ? money(v) + " / person" : money(v)) + (inScope(k) ? "" : " (filtered out)"); });
+      if (lvl === "region") map.setStroke(colorOf);   // region-only view: hide internal district borders
+      else { var gf = geoFiltered(); map.setOutline(function (k) { return gf && inScope(k); }); }
+      C.attachMapLegend(map.el, { kind: "gradient", min: min, max: max, fmt: moneyShort, label: (metric === "perperson" ? "Cost per person" : "Total cost") });
+      return map;
+    }
+    var map = buildMap();
 
     return el("div", { class: "map-card" }, [
       el("div", { class: "card-head" }, [el("div", { class: "card-titlerow" }, [el("span", { class: "card-title", text: titleText }), el("span", { class: "card-action" }, [dlPng(function () { return map.el; }, "map-" + lvl + "-" + metric + ".png")])])]),
-      el("div", { class: "map-wrap" }, [map.el, G.ui.expandPlot(titleText, function () { return map.el.cloneNode(true); })])
+      el("div", { class: "map-wrap" }, [map.el, G.ui.expandPlot(titleText, function () { return buildMap().el; })])
     ]);
   }
 

@@ -312,6 +312,32 @@ GMB.charts = GMB.charts || {};
   // ---- map legend (attached INTO the gambiaMap svg so it exports with the map) ----
   var _gid = 0;
   C.attachMapLegend = function (mapSvg, spec) {
+    if (!mapSvg.getAttribute || !mapSvg.getAttribute("viewBox")) {
+      mapSvg._gmbLegendSpec = spec;
+      mapSvg.querySelectorAll(".leaflet-map-legend").forEach(function (n) { n.remove(); });
+      var leg = document.createElement("div");
+      leg.className = "leaflet-map-legend";
+      if (spec.kind === "gradient") {
+        var label = document.createElement("div"); label.className = "leaflet-map-legend-label"; label.textContent = spec.label || ""; leg.appendChild(label);
+        var bar = document.createElement("div"); bar.className = "leaflet-map-gradient";
+        var stops = (spec.stops || [[0, "#ffffb2"], [.25, "#fed976"], [.5, "#feb24c"], [.7, "#fd8d3c"], [.85, "#f03b20"], [1, "#bd0026"]]).map(function (st) { return st[1] + " " + Math.round(st[0] * 100) + "%"; }).join(", ");
+        bar.style.background = "linear-gradient(90deg, " + stops + ")";
+        leg.appendChild(bar);
+        var scale = document.createElement("div"); scale.className = "leaflet-map-scale";
+        scale.appendChild(document.createElement("span")); scale.lastChild.textContent = spec.fmt(spec.min);
+        scale.appendChild(document.createElement("span")); scale.lastChild.textContent = spec.fmt(spec.max);
+        leg.appendChild(scale);
+      } else {
+        (spec.items || []).forEach(function (it) {
+          var item = document.createElement("span"); item.className = "leaflet-map-legend-item";
+          var sw = document.createElement("span"); sw.className = "leaflet-map-swatch"; sw.style.background = it.color || "#ccc";
+          item.appendChild(sw); item.appendChild(document.createTextNode(it.label || ""));
+          leg.appendChild(item);
+        });
+      }
+      mapSvg.appendChild(leg);
+      return mapSvg;
+    }
     var vb = mapSvg.getAttribute("viewBox").split(/\s+/).map(Number), W = vb[2], H = vb[3];
     var legH = spec.kind === "gradient" ? 78 : packSwatch(spec.items, W, 0, null);
     mapSvg.setAttribute("viewBox", vb[0] + " " + vb[1] + " " + W + " " + (H + legH + 8));

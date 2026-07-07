@@ -18,7 +18,7 @@ window.GMB = window.GMB || {};
       pop_u5:             0.16,   // children under 5
       pop_smc_3_59m:      0.145,  // SMC eligible (3–59 months)
       pop_school:         0.25,   // school-age children 5–14 (IPT-SAC)
-      pop_pw:             0.042,  // pregnant women (IPTp / routine ANC)
+      pop_pw:             0.042,  // pregnant women (legacy IPTp / routine ANC)
       pop_vaccine_cohort: 0.035   // infant cohort reaching vaccine age
     },
 

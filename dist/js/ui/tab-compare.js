@@ -47,9 +47,11 @@ GMB.tabs = GMB.tabs || {};
   function avail() {
     var yrs = {}, ivs = {}, cls = {};
     selectedBudgets().forEach(function (b) { (b.costRows || []).forEach(function (r) { yrs[r.year] = 1; ivs[r.intervention_code] = 1; cls[r.cost_class] = 1; }); });
+    var orderedIv = G.catalog.concat(G.legacyCatalog || []).map(function (c) { return c.code; }).filter(function (c) { return ivs[c]; });
+    Object.keys(ivs).sort().forEach(function (c) { if (orderedIv.indexOf(c) === -1) orderedIv.push(c); });
     return {
       years: Object.keys(yrs).map(Number).sort(function (a, b) { return a - b; }),
-      interventions: G.catalog.map(function (c) { return c.code; }).filter(function (c) { return ivs[c]; }),
+      interventions: orderedIv,
       costClasses: Object.keys(cls).sort()
     };
   }

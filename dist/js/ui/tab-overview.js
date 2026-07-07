@@ -59,7 +59,7 @@ GMB.tabs.overview = {
 
     var scopePanel = el("div", { class: "panel" }, [
       el("h2", { text: "Current scope" }),
-      el("p", { class: "lead", text: "This version supports SNT-based budgeting for Mass ITN campaign, Routine / continuous ITN, Indoor residual spraying, Seasonal malaria chemoprevention, IPT for school-age children, Malaria vaccine, and IPTp in pregnancy." }),
+      el("p", { class: "lead", text: "This version supports SNT-based budgeting for Mass ITN campaign, Routine / continuous ITN, Indoor residual spraying, Seasonal malaria chemoprevention, IPT for school-age children, and Malaria vaccine." }),
       el("p", { text: "It does not currently budget case management, other interventions, or programme/activity cost categories that are not included in the uploaded/default unit cost file." }),
       el("p", { text: "Shared saving: wait for the header to show Shared data saved before closing. The app shares saved versions, but it is not live co-editing, so avoid editing the same scenario or cost set at the same time." })
     ]);

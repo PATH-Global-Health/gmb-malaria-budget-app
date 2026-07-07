@@ -4,9 +4,10 @@ GMB.engine = GMB.engine || {};
 
 (function (G) {
   var E = G.engine;
+  E.version = "2026-07-llin-targeting-leaflet-iptp-archive";
 
   E.sourceSig = function (scn, costSet) {
-    return G.util.hash(JSON.stringify(scn) + "|" + JSON.stringify(costSet));
+    return G.util.hash(E.version + "|" + JSON.stringify(scn) + "|" + JSON.stringify(costSet));
   };
 
   function growthArg(scn) {

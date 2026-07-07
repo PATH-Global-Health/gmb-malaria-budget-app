@@ -1,6 +1,7 @@
-/* Intervention catalog + the five SNT templates for The Gambia (v1: core 6 + IPTp).
+/* Intervention catalog + the five SNT templates for The Gambia.
    Defaults seeded from the model scripts (01.scenario_set_up.R / 02.prep_*.R).
-   `engine` names the quantification function; `defaults` pre-fill the scenario page. */
+   `engine` names the quantification function; `defaults` pre-fill the scenario page.
+   IPTp is archived as a legacy entry so old saved budgets remain readable. */
 window.GMB = window.GMB || {};
 
 GMB.catalog = [
@@ -8,7 +9,7 @@ GMB.catalog = [
     description: "Mass distribution of insecticide-treated nets to every household.",
     types: ["Dual-AI", "PBO", "Standard Pyrethroid"], varyType: true, typeLabel: "Net type",
     target: { key: "total", mode: "total" },
-    defaults: { coverage: 1.0, buffer: 0.07, people_per_net: 1.8 }, preselect: true },
+    defaults: { coverage: 1.0, buffer: 0.07, people_per_net_cap: 2, people_per_net: 1.8 }, preselect: true },
 
   { code: "mii_routine", engine: "itn_routine", nice: "Routine / continuous ITN", commodity: "Nets",
     description: "Continuous nets via ANC and immunisation (EPI) contacts.",
@@ -38,17 +39,19 @@ GMB.catalog = [
     description: "Vaccination of the eligible infant cohort across the dose schedule.",
     types: ["R21", "RTS,S"],
     target: { key: "infant", mode: "groups", groups: [{ label: "Infant vaccine cohort", pct: 3.5 }] },
-    defaults: { buffer: 0.07, dose1: 0.90, dose2: 0.90, dose3: 0.90, dose4: 0.85 }, preselect: false },
+    defaults: { buffer: 0.07, dose1: 0.90, dose2: 0.90, dose3: 0.90, dose4: 0.85 }, preselect: false }
+];
 
+GMB.legacyCatalog = [
   { code: "iptp", engine: "iptp_anc", nice: "IPTp in pregnancy (ANC)", commodity: "Treatment courses (SP)",
     description: "Intermittent preventive treatment for pregnant women at ANC visits.",
     types: ["SP"],
     target: { key: "pw", mode: "groups", groups: [{ label: "Pregnant women", pct: 4.2 }] },
-    defaults: { buffer: 0.07, contact1: 0.95, contact2: 0.85, contact3: 0.70, contact4: 0.50 }, preselect: true }
+    defaults: { buffer: 0.07, contact1: 0.95, contact2: 0.85, contact3: 0.70, contact4: 0.50 }, preselect: false, legacy: true }
 ];
 
 GMB.catalogByCode = function (code) {
-  return GMB.catalog.filter(function (c) { return c.code === code; })[0] || null;
+  return GMB.catalog.concat(GMB.legacyCatalog || []).filter(function (c) { return c.code === code; })[0] || null;
 };
 
 /* ---- District keys used by the templates ---- */
@@ -66,33 +69,31 @@ GMB.templates = {
   nsp: { id: "nsp", name: "NSP — National Strategic Plan", averagingYears: [2024],
     description: "Full national strategic plan; high-burden interventions in Strata III (2024 incidence).",
     interventions: { mii: { scope: EVERY }, mii_routine: { scope: EVERY }, smc: { scope: III() },
-      iptsc: { scope: III() }, irs: { scope: III() }, vax: { scope: III() }, iptp: { scope: EVERY } } },
+      iptsc: { scope: III() }, irs: { scope: III() }, vax: { scope: III() } } },
 
   bau: { id: "bau", name: "Business as usual", averagingYears: [2023, 2024, 2025],
     description: "Continue interventions at 2025 levels.",
     interventions: { mii: { scope: EVERY }, mii_routine: { scope: EVERY }, smc: { scope: III() },
-      irs: { scope: { mode: "custom", regions: ["Upper River", "Central River"] } }, iptp: { scope: EVERY } } },
+      irs: { scope: { mode: "custom", regions: ["Upper River", "Central River"] } } } },
 
   optimistic: { id: "optimistic", name: "Optimistic", averagingYears: [2023, 2024, 2025],
     description: "Increased funding; high-burden interventions in Strata III (2023–2025 mean).",
     interventions: { mii: { scope: EVERY }, mii_routine: { scope: EVERY }, smc: { scope: III() },
       iptsc: { scope: III({ regionFilter: ["Central River", "Upper River"] }) },
-      irs: { scope: III() }, vax: { scope: III() }, iptp: { scope: EVERY } } },
+      irs: { scope: III() }, vax: { scope: III() } } },
 
   realistic: { id: "realistic", name: "Realistic", averagingYears: [2023, 2024, 2025],
-    description: "Reduced funding: 1 net per 3 people, cease routine after campaign, no IRS or IPTsc, vaccine to GAVI-approved districts.",
-    interventions: { mii: { scope: EVERY, params: { people_per_net: 3, coverage: 0.71 } },
+    description: "Reduced funding: 3-person net cap, cease routine after campaign, no IRS or IPTsc, vaccine to GAVI-approved districts.",
+    interventions: { mii: { scope: EVERY, params: { people_per_net_cap: 3, people_per_net: 2.7, coverage: 0.71 } },
       mii_routine: { scope: EVERY, levers: { ceaseAfterCampaign: true } },
       smc: { scope: III({ exclude: ["Western 1|Kanifing", "Western 1|Banjul"] }) },
-      vax: { scope: { mode: "custom", regions: ["Upper River"], districts: ["Lower River|Jarra East", "Western 2|Kombo South"] } },
-      iptp: { scope: EVERY } } },
+      vax: { scope: { mode: "custom", regions: ["Upper River"], districts: ["Lower River|Jarra East", "Western 2|Kombo South"] } } } },
 
   pessimistic: { id: "pessimistic", name: "Pessimistic", averagingYears: [2023, 2024, 2025],
     description: "Deepest cuts: deprioritise urban + CBS areas, SMC at 3 cycles, no IRS/IPTsc/vaccine.",
     interventions: { mii: { scope: { mode: "everywhere", exclude: URBAN.concat(CBS) } },
       mii_routine: { scope: EVERY, levers: { ceaseAfterCampaign: true } },
-      smc: { scope: III({ exclude: ["Western 1|Kanifing", "Western 1|Banjul"] }), params: { cycles: 3 } },
-      iptp: { scope: EVERY } } }
+      smc: { scope: III({ exclude: ["Western 1|Kanifing", "Western 1|Banjul"] }), params: { cycles: 3 } } } }
 };
 
 /** Resolve an intervention scope to a set of district keys, given a strata assignment. */

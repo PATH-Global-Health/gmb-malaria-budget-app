@@ -97,13 +97,13 @@ window.GMB = window.GMB || {};
       return out;
     }
     function assumptionRows() {
-      if (!scn) return [["Scenario source unavailable", "", "", "", "", "", "", "", "", ""]];
+      if (!scn) return [["Scenario source unavailable", "", "", "", "", "", "", "", "", "", ""]];
       var rowsOut = [];
       G.catalog.forEach(function (c) {
         var iv = scn.interventions && scn.interventions[c.code];
         if (!iv) return;
         var p = iv.params || {};
-        rowsOut.push([ivName(c.code), c.code, iv.enabled ? "Yes" : "No", clean(iv.type), clean((iv.activeYears || []).join(", ")), clean(p.coverage), clean(p.cycles), clean(p.buffer), clean(p.people_per_net), clean(iv.scope && iv.scope.mode)]);
+        rowsOut.push([ivName(c.code), c.code, iv.enabled ? "Yes" : "No", clean(iv.type), clean((iv.activeYears || []).join(", ")), clean(p.coverage), clean(p.cycles), clean(p.buffer), clean(p.people_per_net_cap), clean(p.people_per_net), clean(iv.scope && iv.scope.mode)]);
       });
       return rowsOut;
     }
@@ -215,7 +215,7 @@ window.GMB = window.GMB || {};
       rows: [["Status", st.label || st.state], ["Budget id", b.id || ""], ["Scenario id", b.scenarioId || ""], ["Cost set id", b.costSetId || ""], ["Scenario source available", scn ? "Yes" : "No"], ["Cost set source available", costSet ? "Yes" : "No"], ["Saved source signature", b.sourceSig || ""], ["Generated", b.generatedAt || ""], ["Schema version", b.schemaVersion || ""]] });
 
     sheets.push({ name: "Assumptions snapshot", title: "Scenario assumptions snapshot",
-      columns: [{ label: "Intervention", width: 190 }, { label: "Code", width: 80 }, { label: "Enabled", width: 80 }, { label: "Selected type", width: 140 }, { label: "Active years", width: 140 }, { label: "Coverage", width: 90, fmt: "num1" }, { label: "Cycles", width: 80, fmt: "num1" }, { label: "Buffer", width: 80, fmt: "num1" }, { label: "People per net", width: 110, fmt: "num1" }, { label: "Scope mode", width: 120 }],
+      columns: [{ label: "Intervention", width: 190 }, { label: "Code", width: 80 }, { label: "Enabled", width: 80 }, { label: "Selected type", width: 140 }, { label: "Active years", width: 140 }, { label: "Coverage", width: 90, fmt: "num1" }, { label: "Cycles", width: 80, fmt: "num1" }, { label: "Buffer", width: 80, fmt: "num1" }, { label: "People Per Net Cap", width: 130, fmt: "num1" }, { label: "Effective people per net", width: 150, fmt: "num1" }, { label: "Scope mode", width: 120 }],
       rows: assumptionRows() });
 
     sheets.push({ name: "Cost set audit", title: "Cost set audit",
