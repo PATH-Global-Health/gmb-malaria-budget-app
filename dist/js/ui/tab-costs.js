@@ -85,7 +85,7 @@ GMB.tabs = GMB.tabs || {};
   function buildDefaultCostSet() {
     return {
       id: uid("cost"), name: "COOP cost scenario v1", seed: "gfpmi",
-      description: "Default unit costs from the COOP Malaria Unit Cost Tool v3.3 — GF/PMI 2025 reference prices (USD, per unit).",
+      description: "Default unit costs from the COOP Malaria Unit Cost Tool, with Gambia vaccine introduction delivery costs from v4.6 and current RTS,S/R21 procurement rows retained.",
       currency: (G.data && G.data.defaultCurrency) || "GMD",
       exchange_rate: (G.data && G.data.defaultExchangeRate) || 72.39,
       rows: clone((G.data && G.data.defaultCosts) || []), schemaVersion: 1
@@ -97,9 +97,14 @@ GMB.tabs = GMB.tabs || {};
     // corrective refresh of the canonical reference if it predates a library fix
     var changed = false;
     if (ref.name === "GF / PMI 2025 reference") { ref.name = "COOP cost scenario v1"; changed = true; }
-    if (!ref.description) { ref.description = "Default unit costs from the COOP Malaria Unit Cost Tool v3.3 — GF/PMI 2025 reference prices (USD, per unit)."; changed = true; }
-    if (ref.rows.some(function (r) { return r.intervention_code === "vax" && r.unit !== "Per dose"; })
-      || ref.rows.some(function (r) { return r.intervention_code === "irs" && /SumiShield|Fludora/.test(r.description || "") && !r.type; })
+    if (!ref.description || /Unit Cost Tool v3\.3/.test(ref.description)) { ref.description = "Default unit costs from the COOP Malaria Unit Cost Tool, with Gambia vaccine introduction delivery costs from v4.6 and current RTS,S/R21 procurement rows retained."; changed = true; }
+    if (ref.rows.some(function (r) { return r.intervention_code === "vax" && /diluent|syringes|safety boxes|cold-chain|last-mile vaccine transport/i.test(r.description || ""); })
+      || !ref.rows.some(function (r) { return r.intervention_code === "vax" && r.description === "Vaccine operational delivery (introduction)"; })) {
+      var defVaxAddons = clone((G.data && G.data.defaultCosts) || []).filter(function (r) { return r.intervention_code === "vax" && !(r.cost_class === "PROC" && r.type); });
+      ref.rows = ref.rows.filter(function (r) { return r.intervention_code !== "vax" || (r.cost_class === "PROC" && r.type); }).concat(defVaxAddons);
+      changed = true;
+    }
+    if (ref.rows.some(function (r) { return r.intervention_code === "irs" && /SumiShield|Fludora/.test(r.description || "") && !r.type; })
       || ref.rows.some(function (r) { return r.intervention_code === "smc" && r.cost_class === "PROC" && r.type === "SP-AQ"; })
       || ref.rows.some(function (r) { return r.intervention_code === "iptsc" && r.cost_class === "PROC" && r.type === "DHA-PPQ"; })) { ref.rows = clone((G.data && G.data.defaultCosts) || []); changed = true; }
     if (changed) G.store.updateCostSet(ref);
