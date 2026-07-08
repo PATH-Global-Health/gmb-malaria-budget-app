@@ -59,19 +59,26 @@ GMB.tabs = GMB.tabs || {};
     return i;
   }
   function dqEl(r) {
-    var opts = [
-      { value: "", label: "Not set" },
-      { value: "1", label: "1 - Model estimate" },
-      { value: "2", label: "2 - Programme data" },
-      { value: "3", label: "3 - Primary study" }
-    ];
-    var s = selEl(opts, r.dataQuality == null ? "" : String(r.dataQuality), function (v) {
+    var labels = { 1: "Model estimate", 2: "Programme data", 3: "Primary study" };
+    function cls(v) { return "dq dq-input dq" + (v || 0); }
+    var i = document.createElement("input");
+    i.type = "text";
+    i.inputMode = "numeric";
+    i.maxLength = 1;
+    i.className = cls(r.dataQuality);
+    i.value = r.dataQuality == null ? "" : String(r.dataQuality);
+    i.title = "Data quality score: 1 = Model estimate, 2 = Programme data, 3 = Primary study. Leave blank if not set.";
+    i.setAttribute("aria-label", "Data quality score");
+    i.addEventListener("focus", function () { i.select(); });
+    i.addEventListener("input", function () {
+      var v = i.value.replace(/[^1-3]/g, "").slice(0, 1);
+      if (i.value !== v) i.value = v;
       r.dataQuality = v === "" ? null : parseInt(v, 10);
+      i.className = cls(r.dataQuality);
+      i.title = r.dataQuality ? "Data quality: " + r.dataQuality + " - " + labels[r.dataQuality] : "Data quality: not set";
       updateSaveState();
     });
-    s.title = "Data quality score for this cost row.";
-    s.style.width = "112px";
-    return s;
+    return i;
   }
 
   // ---------- cost-set model ----------
