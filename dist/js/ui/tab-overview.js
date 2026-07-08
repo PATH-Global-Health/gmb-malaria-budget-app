@@ -1,4 +1,4 @@
-/* Overview tab — welcome, a step-by-step "how to use" guide, and tool scope. */
+/* Overview tab - welcome, a step-by-step "how to use" guide, and tool scope. */
 window.GMB = window.GMB || {};
 GMB.tabs = GMB.tabs || {};
 
@@ -7,21 +7,29 @@ GMB.tabs.overview = {
     var el = GMB.ui.el;
     var st = GMB.store.get();
     var C = GMB.content || {};
+    var guidePath = "user-guidance/The-Gambia-Malaria-Budgeting-Tool-User-Guide.docx";
     root.innerHTML = "";
 
     // Hero
     root.appendChild(el("div", { class: "panel" }, [
       el("div", { class: "hero-text" }, [
-        el("h2", { text: "Build a malaria budget for The Gambia — step by step" }),
+        el("h2", { text: "Build a malaria budget for The Gambia - step by step" }),
         el("p", { class: "lead", text:
-          "Turn a simple plan — which interventions, where, and at what coverage — into a " +
+          "Turn a simple plan - which interventions, where, and at what coverage - into a " +
           "fully costed, multi-year malaria budget. Work through the steps along the top, in order." }),
-        el("button", { class: "btn", onClick: function () { GMB.router.go("scenario"); } },
-          ["Start a new scenario →"])
+        el("div", { class: "actions-row" }, [
+          el("button", { class: "btn", onClick: function () { GMB.router.go("scenario"); } },
+            ["Start a new scenario ->"]),
+          el("a", {
+            class: "btn secondary",
+            href: guidePath,
+            download: "The-Gambia-Malaria-Budgeting-Tool-User-Guide.docx"
+          }, ["Download user guide"])
+        ])
       ])
     ]));
 
-    // How to use this tool — collapsible steps that jump to each tab
+    // How to use this tool - collapsible steps that jump to each tab
     var stepsPanel = el("div", { class: "panel" }, [el("h2", { text: "How to use this tool" })]);
     (C.guide || []).forEach(function (g, i) {
       var det = document.createElement("details"); det.className = "guide-step";
@@ -31,7 +39,7 @@ GMB.tabs.overview = {
       det.appendChild(sum);
       var body = el("div", { class: "guide-body" }, [el("p", { text: g.lead })]);
       if (g.points) body.appendChild(el("ul", {}, g.points.map(function (p) { return el("li", { text: p }); })));
-      body.appendChild(el("button", { class: "btn secondary", onClick: (function (tab) { return function () { GMB.router.go(tab); }; })(g.tab) }, ["Go to this step →"]));
+      body.appendChild(el("button", { class: "btn secondary", onClick: (function (tab) { return function () { GMB.router.go(tab); }; })(g.tab) }, ["Go to this step ->"]));
       det.appendChild(body);
       stepsPanel.appendChild(det);
     });
@@ -41,7 +49,7 @@ GMB.tabs.overview = {
       "Strategic multi-year intervention budgeting at national or sub-national level",
       "Comparing the cost of different intervention packages and coverage scenarios",
       "Funding gap discussions and donor planning",
-      "SNT-based budgeting for the seven included intervention areas"
+      "SNT-based budgeting for the six included intervention areas"
     ];
     var notFor = [
       "Case management or other interventions outside the included SNT intervention areas",
@@ -64,7 +72,7 @@ GMB.tabs.overview = {
       el("p", { text: "Shared saving: wait for the header to show Shared data saved before closing. The app shares saved versions, but it is not live co-editing, so avoid editing the same scenario or cost set at the same time." })
     ]);
 
-    // How to use  +  What it is for, side by side
+    // How to use + What it is for, side by side
     root.appendChild(el("div", { class: "overview-cols" }, [stepsPanel, whatPanel]));
     root.appendChild(scopePanel);
 
@@ -72,8 +80,8 @@ GMB.tabs.overview = {
     root.appendChild(el("div", { class: "panel saved-strip" }, [
       el("strong", { text: "Your saved work" }),
       el("span", { class: "counts", html:
-        "<b>" + st.scenarios.length + "</b> scenarios &nbsp;·&nbsp; " +
-        "<b>" + st.costSets.length + "</b> cost sets &nbsp;·&nbsp; " +
+        "<b>" + st.scenarios.length + "</b> scenarios &nbsp;&middot;&nbsp; " +
+        "<b>" + st.costSets.length + "</b> cost sets &nbsp;&middot;&nbsp; " +
         "<b>" + st.budgets.length + "</b> generated budgets" })
     ]));
   }
