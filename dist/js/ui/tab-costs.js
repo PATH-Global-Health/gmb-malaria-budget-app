@@ -23,7 +23,9 @@ GMB.tabs = GMB.tabs || {};
     o = o || {}; var i = document.createElement("input"); i.type = "number"; i.value = (val == null ? "" : val);
     ["min", "max", "step"].forEach(function (k) { if (o[k] != null) i.setAttribute(k, o[k]); });
     i.style.width = o.width || "78px";
-    i.addEventListener("change", function () { on(i.value === "" ? null : parseFloat(i.value)); });
+    function commit() { on(i.value === "" ? null : parseFloat(i.value)); updateSaveState(); }
+    i.addEventListener("input", commit);
+    i.addEventListener("change", function () { commit(); if (o.afterChange) o.afterChange(); });
     return i;
   }
   function selEl(options, value, on) {
@@ -45,14 +47,31 @@ GMB.tabs = GMB.tabs || {};
   function unitEl(r) {
     var i = document.createElement("input"); i.type = "text"; i.value = r.unit || "";
     i.setAttribute("list", "gmb-units"); i.style.width = "96px";
-    i.addEventListener("change", function () { r.unit = i.value; });
+    i.addEventListener("input", function () { r.unit = i.value; updateSaveState(); });
+    i.addEventListener("change", function () { r.unit = i.value; updateSaveState(); });
     return i;
   }
   function typeEl(r, c) {
     var i = document.createElement("input"); i.type = "text"; i.value = r.type || "";
     i.placeholder = "shared"; i.setAttribute("list", "gmb-types-" + c.code); i.style.width = "116px";
-    i.addEventListener("change", function () { r.type = i.value; });
+    i.addEventListener("input", function () { r.type = i.value; updateSaveState(); });
+    i.addEventListener("change", function () { r.type = i.value; updateSaveState(); });
     return i;
+  }
+  function dqEl(r) {
+    var opts = [
+      { value: "", label: "Not set" },
+      { value: "1", label: "1 - Model estimate" },
+      { value: "2", label: "2 - Programme data" },
+      { value: "3", label: "3 - Primary study" }
+    ];
+    var s = selEl(opts, r.dataQuality == null ? "" : String(r.dataQuality), function (v) {
+      r.dataQuality = v === "" ? null : parseInt(v, 10);
+      updateSaveState();
+    });
+    s.title = "Data quality score for this cost row.";
+    s.style.width = "112px";
+    return s;
   }
 
   // ---------- cost-set model ----------
@@ -116,7 +135,12 @@ GMB.tabs = GMB.tabs || {};
       footer: [el("button", { class: "linkbtn", onClick: function () { modal.close(); } }, ["Cancel"]),
         el("button", { class: "btn", onClick: function () { var f = 1 + pct / 100; current.rows.forEach(function (r) { if (cat === "ALL" || r.cost_class === cat) r.usd_cost = Math.round((r.usd_cost || 0) * f * 10000) / 10000; }); modal.close(); refresh(); } }, ["Apply"])] });
   }
-  function descEl(r) { var i = document.createElement("input"); i.type = "text"; i.value = r.description || ""; i.style.width = "100%"; i.addEventListener("change", function () { r.description = i.value; }); return i; }
+  function descEl(r) {
+    var i = document.createElement("input"); i.type = "text"; i.value = r.description || ""; i.style.width = "100%";
+    i.addEventListener("input", function () { r.description = i.value; updateSaveState(); });
+    i.addEventListener("change", function () { r.description = i.value; updateSaveState(); });
+    return i;
+  }
   function removeLine(r) { current.rows = current.rows.filter(function (x) { return x !== r; }); refresh(); }
   function addLineControl(c) {
     var cat = "PROC";
@@ -131,7 +155,7 @@ GMB.tabs = GMB.tabs || {};
   }
   function resetPrices() {
     var def = {}; ((G.data && G.data.defaultCosts) || []).forEach(function (r) { def[r.intervention_code + "|" + r.cost_class + "|" + r.description] = r; });
-    current.rows.forEach(function (r) { var d = def[r.intervention_code + "|" + r.cost_class + "|" + r.description]; if (d) { r.usd_cost = d.usd_cost; r.unit = d.unit; } });
+    current.rows.forEach(function (r) { var d = def[r.intervention_code + "|" + r.cost_class + "|" + r.description]; if (d) { r.usd_cost = d.usd_cost; r.unit = d.unit; r.dataQuality = d.dataQuality == null ? null : d.dataQuality; } });
     refresh();
   }
   function doSave() {
@@ -213,7 +237,7 @@ GMB.tabs = GMB.tabs || {};
     p.appendChild(el("div", { class: "field" }, [el("label", { text: "Exchange rate (USD → " + (current.currency || "GMD") + ")" }),
       el("div", { class: "settings-line" }, [
         el("span", { class: "small muted", text: "1 USD =" }),
-        numEl(current.exchange_rate, function (v) { current.exchange_rate = v; refresh(); }, { min: 0, step: 0.01, width: "90px" }),
+        numEl(current.exchange_rate, function (v) { current.exchange_rate = v; }, { min: 0, step: 0.01, width: "90px", afterChange: refresh }),
         el("span", { class: "small muted", text: current.currency || "GMD" }),
         el("button", { class: "linkbtn", style: "margin-left:14px", onClick: resetPrices }, ["Reset to defaults"])
       ])]));
@@ -247,9 +271,9 @@ GMB.tabs = GMB.tabs || {};
               el("td", { class: "cost-desc", title: r.source || "" }, [descEl(r)]),
               el("td", {}, [typeEl(r, c)]),
               el("td", {}, [unitEl(r)]),
-              el("td", {}, [numEl(r.usd_cost, function (v) { r.usd_cost = (v == null ? 0 : v); refresh(); }, { min: 0, step: 0.01, width: "74px" })]),
+              el("td", {}, [numEl(r.usd_cost, function (v) { r.usd_cost = (v == null ? 0 : v); }, { min: 0, step: 0.01, width: "74px", afterChange: refresh })]),
               el("td", { class: "small muted cost-gmd", text: gmd((r.usd_cost || 0) * rate()) }),
-              el("td", {}, [dqBadge(r.dataQuality)]),
+              el("td", {}, [dqEl(r)]),
               el("td", {}, [el("span", { class: "x", title: "Remove line", text: "×", onClick: function () { removeLine(r); } })])
             ]));
           });
@@ -293,7 +317,7 @@ GMB.tabs = GMB.tabs || {};
     var dirty = isDirty();
     s.className = "save-state " + (dirty ? "dirty" : "clean");
     s.lastChild.textContent = dirty ? (lastSavedJson === null ? "New cost set — not saved" : "Unsaved changes") : "All changes saved";
-    rootEl.querySelectorAll(".cost-summary .btn").forEach(function (b) { b.disabled = !dirty; });
+    rootEl.querySelectorAll(".cost-summary .btn:not(.danger)").forEach(function (b) { b.disabled = !dirty; });
   }
 
   G.tabs.costs = {
