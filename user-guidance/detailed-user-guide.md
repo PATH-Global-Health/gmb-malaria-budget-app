@@ -1,12 +1,12 @@
-# The Gambia Malaria Budgeting Tool: User Guide
+# The Gambia Malaria Budgeting Tool: Detailed User Guide
 
 Live app: https://path-global-health.github.io/gmb-malaria-budget-app/
 
-This guide is for programme users who will view, generate, compare, or export budgets. It is written as a practical walkthrough: what to click, what to check, what warnings mean, and how to avoid common mistakes. It does not require GitHub or AWS access.
+This guide is for programme users who need to use, check, or explain outputs from The Gambia Malaria Budgeting Tool. It is written as a practical walkthrough: what each page is for, what to click, what to check before moving on, and what common warnings mean. You do not need GitHub, AWS, or software development knowledge to use the tool.
 
 ## Quick Orientation
 
-The app turns a malaria plan into a costed budget. You define what interventions are delivered, where they are delivered, in which years, and at what coverage. You then combine that scenario with a unit cost set to generate budget outputs, charts, maps, comparisons, and Excel exports.
+The app turns an SNT-style malaria plan into a costed, multi-year budget. You define which interventions are delivered, where they are delivered, in which years, and at what coverage. The tool then combines that scenario with a unit cost set to generate budget tables, maps, charts, comparisons, and Excel exports.
 
 The workflow is arranged across the top of the app:
 
@@ -14,13 +14,13 @@ The workflow is arranged across the top of the app:
 2. Cost specification: review or edit unit costs.
 3. Budget generation: combine a scenario and cost set.
 4. Budget visualisation: review one generated budget.
-5. Budget comparison: compare two or more generated budgets.
+5. Budget comparison: compare generated budgets.
 
-The Methods tab is a reference section. It explains the formulas, assumptions, cost matching logic, and worked examples.
+The Methods tab is a reference section. It explains the formulas, assumptions, type-matching logic, line-item costing, and worked examples.
 
 ## Current Scope Of The Tool
 
-The tool supports SNT-based budgeting for seven intervention areas:
+The current Gambia version supports SNT-based budgeting for these six intervention areas:
 
 - Mass ITN campaign
 - Routine / continuous ITN
@@ -28,546 +28,697 @@ The tool supports SNT-based budgeting for seven intervention areas:
 - Seasonal malaria chemoprevention
 - IPT for school-age children
 - Malaria vaccine
-- IPTp in pregnancy
 
 The current version does not support:
 
 - case management
 - other malaria interventions
-- programme or activity cost categories that are not represented in the uploaded/default unit cost file
+- programme or activity cost areas that are not represented in the uploaded/default unit cost file
 - real-time expenditure tracking
-- real-time co-editing
-- GF detailed budget formatted data
+- live co-editing like Google Docs
+- automatic production of a full GF detailed budget template
 
-This means the tool is best used for strategic planning, scenario comparison, funding gap discussions, and checking high-level budget drivers. It is not a replacement for a detailed activity workplan or financial expenditure system.
+IPTp is archived in this version. Older saved budgets that contain IPTp rows can still be displayed or exported, but IPTp is not part of the current scenario setup or new budget-generation workflow.
+
+Use this tool for strategic planning, scenario comparison, funding gap discussions, and checking major cost drivers. Do not use it as the only source for activity-level workplanning, procurement orders, or expenditure monitoring.
 
 ![Sign-in screen and shared access status](screenshots/annotated/00-sign-in-gate.png)
 
 ## Getting Started And Signing In
 
-Open the app link in a browser:
+Open the live app in a browser:
 
 https://path-global-health.github.io/gmb-malaria-budget-app/
 
-Use your email address as your username.
+Use your email address as your username. If you were given a temporary password, enter it at first sign-in and then create your own password when prompted.
 
-Temporary password: `!malariatempPW26`
+After signing in, check the top-right corner of the app:
 
-The first time you sign in, you should be asked to set your own password. After signing in, the app should load the shared workspace.
+- Your email address should appear.
+- The shared saving status should move through loading and then show `Shared data loaded` or `Shared data saved`.
+- The workflow tabs should be visible.
 
-What to check after signing in:
-
-- Your email address appears in the top-right corner.
-- The shared saving status changes from sign-in/loading text to `Shared data loaded` or `Shared data saved`.
-- The workflow tabs across the top are visible.
-
-If the app does not load after signing in, refresh the page once and wait for the shared status to update.
+If the page seems stuck after sign-in, refresh the page once and wait for the shared status to update.
 
 ## Shared Saving And Collaboration
 
-The hosted app shares saved scenarios, cost sets, and generated budgets across authorised users. This is what lets a budget generated on one computer appear for another authorised user.
+The hosted app shares saved scenarios, cost sets, and generated budgets across authorised users. This is what lets one person generate a budget and another person open it later.
 
 The top-right corner shows the shared saving status:
 
-- `Shared data loaded` means the browser has loaded the shared workspace.
-- `Shared data saved` means your latest saved work has reached shared storage.
-- `Shared save skipped` means the app prevented this browser from overwriting shared budgets.
+- `Shared data loaded` means the browser loaded the shared workspace.
+- `Shared data saved` means the latest saved work reached shared storage.
+- `Saving shared data...` means the app is still saving.
+- `Shared save skipped` means the app prevented this browser from overwriting shared budgets, usually because this browser has no local budget library to preserve.
+- `Shared save failed` means the app could not save to shared storage. Your browser may still hold local changes, but ask for support before closing if the work is important.
 
 Important habits:
 
 - Wait for `Shared data saved` before closing the browser.
-- If you open the app in another browser, refresh and wait for `Shared data loaded`.
-- Use `Sync now` only if asked during troubleshooting, or if you are sure that this browser has the budget library that should be preserved.
-- Do not use `Sync now` from a browser that is empty or missing budgets unless you have been asked to do so.
+- If you open the app in a second browser, hard refresh and wait for `Shared data loaded`.
+- Use `Sync now` only from a browser that has the budget library you want to preserve.
+- Avoid two people editing the same scenario or cost set at the same time. The app is shared storage, not live co-editing.
 
-The app is shared, but it is not live co-editing like Google Docs. If two people edit the same scenario or cost set at the same time, the last saved version may replace the other person's changes. Agree who is editing before making changes.
-
-![Overview page and current scope note](screenshots/annotated/01-overview-current-scope.png)
+Plain-language example: if two people open the same scenario at 10:00 and both edit it, the person who saves last may overwrite the other person's changes. Agree who is editing before making major changes.
 
 ## Overview Page
 
-The Overview page is the starting point. It tells you what the tool is for, what it is not for, and how the workflow is organised.
+The Overview page is the starting point. It summarises the workflow and shows the current scope of the tool. Use it to orient new users before they move into the scenario and cost pages.
 
-Use this page to orient yourself before editing anything:
+![Overview page and current scope note](screenshots/annotated/01-overview-current-scope.png)
 
-1. Read the ?How to use this tool? steps.
-2. Check the ?What this tool is and is not for? section.
-3. Check the ?Current scope? note so you know which interventions are included.
-4. Check the saved-work count at the bottom to see how many scenarios, cost sets, and generated budgets are available.
+Before moving on, check:
 
-Tip: If you are only reviewing existing results, you may not need to edit scenarios or costs. Go straight to Budget visualisation or Budget comparison.
+- The footer says reference data are loaded.
+- The current scope matches the work you are trying to do.
+- You understand that unsupported interventions or cost activities cannot be budgeted unless they are added to the scenario logic and cost file.
 
 ## Scenario Specification Walkthrough
 
-Use Scenario specification to define the malaria plan. This is where you choose the plan years, risk stratification, intervention targeting, and intervention-specific assumptions.
+Use Scenario specification to define the malaria plan. This page controls what the budget engine will quantify: target districts, plan years, intervention mix, product choices, coverage, cycles, buffers, and special levers such as ITN caps or routine-net pauses.
 
 ![Scenario specification main screen](screenshots/annotated/02-scenario-main.png)
 
-### Step 1: Choose Or Create A Scenario
+### Step 1: Choose A Scenario
 
-At the top of the page, you will see scenario buttons such as NSP, Business as usual, Optimistic, Realistic, and Pessimistic.
+At the top of the page, the Scenario library shows saved scenario chips. Click a chip to open that scenario.
 
-You can:
+The action buttons are separate from the scenario chips:
 
-- select an existing scenario to review it
-- duplicate a scenario before making edits
-- create a new scenario
-- export scenario assumptions to Excel
+- `Duplicate selected`: creates a copy of the currently selected scenario.
+- `New scenario`: starts a blank/new scenario.
+- `Export to Excel`: exports the selected scenario assumptions.
 
-Recommended approach: duplicate an existing scenario before making substantial edits. This preserves the original and makes comparisons easier later.
+Tip: duplicate before making major edits. It gives you a clean comparison version and protects the previous scenario.
+
+Check before moving on:
+
+- The selected chip is the scenario you intend to edit.
+- The scenario name and notes describe the plan clearly.
+- If you are editing an existing scenario, confirm with colleagues that nobody else is editing it at the same time.
 
 ### Step 2: Review Plan Basics
 
-Check the scenario name and description. The description should explain what the scenario represents, for example ?National Strategic Plan? or ?reduced funding scenario?.
+In Plan basics, check:
 
-Check the plan years. Each selected year is quantified and costed separately. If you remove a year, that year will not appear in the generated budget. If you add a year, the tool projects population using the population growth assumption.
+- Scenario name
+- Notes / description
+- Plan years
+- Population growth rate
 
-What to check before moving on:
+Each selected plan year is quantified and costed separately. If a year is switched off, no quantities or costs should be generated for that year.
 
-- The scenario name is clear enough for other users to understand.
-- The selected years match the planning period you want to cost.
-- The description explains any important assumptions or funding context.
+If you change plan years or population growth, existing budgets generated from this scenario should be treated as out of date and regenerated.
 
 ### Step 3: Review Stratification Rules
 
-Risk strata group districts by malaria incidence. The app uses incidence thresholds to classify districts into strata. These strata are then used to target interventions.
+The stratification section groups districts by malaria incidence. These strata are then used as base rules for intervention targeting.
 
-You can review:
+Typical checks:
 
-- which incidence years are used
-- the threshold values for each stratum
-- the map and summary of districts in each stratum
-- any district-level overrides
+- Incidence years: confirm which incidence year(s) are used for stratification.
+- Stratum thresholds: check the cut-off values.
+- District counts: review how many districts and people are in each stratum.
+- Map: check that the district distribution looks plausible.
 
-Caveat: If you change incidence thresholds, intervention targeting can change because districts may move between strata. Any existing budgets from the old scenario should be regenerated.
+Changing a threshold can move districts between strata. Because intervention targeting can be based on strata, this may change which districts receive IRS, SMC, IPTsc, vaccine, or other interventions. Regenerate affected budgets after changing thresholds.
 
-### Step 4: Review Intervention Targeting
+### Step 4: Review Intervention Mix By Stratum
 
-Each intervention can be targeted to all areas, selected strata, selected regions, selected districts, or custom exclusions depending on the scenario setup.
+The intervention mix table is one of the most important setup areas. It controls whether each intervention is on and which districts are targeted before any manual overrides are applied.
 
-Check carefully:
+For each intervention, review:
 
-- whether each intervention is switched on or off
-- which strata or districts are covered
-- any excluded areas
-- whether the number of districts covered matches your expectation
+- `On`: whether the intervention is active.
+- `All`: whether all districts are targeted by the base rule.
+- `S I`, `S II`, `S III`: whether the base rule targets those strata.
+- `Base`: the base targeting rule.
+- `Manual`: whether manual additions or exclusions have been applied.
+- `Final`: the number of districts targeted after base rules plus manual changes.
 
-The Summary panel on the right helps you check how many interventions are on, how many districts are covered, and whether there are obvious issues.
-
-### Step 5: Review Intervention Assumptions
-
-Intervention assumptions are where most scenario differences are created. This section controls the quantities that will later be costed.
-
-![Intervention assumptions section](screenshots/annotated/03-scenario-intervention-assumptions.png)
-
-Common assumptions include:
-
-- coverage: the percentage of the target group reached
-- target population: the population group used for the intervention
-- commodity or product type: for example net type, IRS insecticide, vaccine product, or drug type
-- rounds, cycles, doses, or contacts: how many times the intervention is delivered
-- buffer or wastage: additional commodity quantity added above the calculated need
-- exclusions: areas or groups intentionally left out
-
-Intervention-specific caveats:
-
-- Mass ITN campaign: check people per net, campaign year, buffer, net type, and any reductions from maximum nets per household or excluded areas.
-- Routine / continuous ITN: check routine coverage and whether routine distribution is paused after a mass campaign. If routine nets are paused, the reduction should carry through to both quantification and costing.
-- IRS: check insecticide type. Product options are Actellic, SumiShield, and Fludora Fusion. Insecticide procurement costs require exact type matching.
-- SMC: check coverage, cycles, buffer, and age-pack assumptions. Commodity quantities are split into SP+AQ 3-11m and SP+AQ 12-59m.
-- IPT for school-age children: check drug type, cycles, coverage, and age-pack assumptions. DHA-PPQ is split into younger and older school-age packs.
-- Malaria vaccine: check dose coverages and product type. Dose quantities are based on the eligible infant cohort and summed dose coverages.
-- IPTp in pregnancy: check ANC contact coverages and whether a matching SP cost pathway exists in the cost set.
-
-What to check before saving:
-
-- The correct interventions are switched on.
-- Intervention coverage assumptions are plausible.
-- Product/type selections match what you expect to cost.
-- Any reductions or exclusions are intentional.
-- The Summary panel does not show unexpected issues.
-
-### Step 6: Save The Scenario
-
-Changes are not final until you save. If you navigate away with unsaved edits, the app may warn you.
-
-After saving, wait for the top-right shared status to show `Shared data saved` before closing the browser.
-
-If you change a scenario after generating a budget, the old budget becomes out of date. Regenerate the budget from Budget generation before relying on outputs.
-
-## Cost Specification Walkthrough
-
-Use Cost specification to review and edit unit costs. A cost set is a collection of cost rows that the budget engine uses to cost quantities from the scenario.
-
-![Cost specification screen](screenshots/annotated/04-cost-specification.png)
-
-### Step 1: Choose Or Create A Cost Set
-
-You can select an existing cost set, duplicate it, or create a new one.
-
-Recommended approach: duplicate the existing cost set before making major changes. This makes it easier to compare the original cost assumptions against revised assumptions.
-
-### Step 2: Check Exchange Rate
-
-The tool stores unit costs in USD and converts to Gambian dalasi using the exchange rate in the cost set.
-
-Check the exchange rate before generating budgets. If you change it, regenerate budgets that use that cost set.
-
-### Step 3: Review Cost Rows
-
-Each cost row describes one cost element. Typical fields include:
-
-- intervention
-- cost category
-- cost description
-- unit
-- unit cost
-- type
-- source
-
-The cost description and source are important because they explain what evidence or assumption the cost is based on. Keep descriptions clear when adding new rows.
-
-### Step 4: Understand Cost Categories
-
-Cost rows are grouped into categories such as procurement, distribution, operations, support, and monitoring & evaluation. Summaries and charts roll up from line-item costs to these categories.
-
-Procurement rows usually cost the commodity itself. Operational, distribution, support, and monitoring rows may cost delivery activities, supervision, staff time, per diems, transport, or other implementation costs.
-
-### Step 5: Understand Units
-
-The unit controls which quantity the engine uses for costing.
-
-Examples:
-
-- Per net, per structure, per dose, per pack, and per treatment course use the commodity quantity.
-- Per child and per person use the coverage-adjusted target population.
-- Per year applies once for each active intervention year.
-- One-off applies once for the whole budget.
-
-Caveat: The unit must match the intended costing logic. For example, a per-child training or administration cost should not be multiplied by every cycle unless it is genuinely incurred every cycle.
-
-### Step 6: Understand Type Matching
-
-Typed commodity rows must match the scenario product or commodity type exactly.
-
-![Cost row type matching example](screenshots/annotated/05-cost-row-type-matching.png)
-
-Examples:
-
-- IRS Actellic only uses Actellic insecticide procurement rows.
-- IRS SumiShield only uses SumiShield insecticide procurement rows.
-- IRS Fludora Fusion only uses Fludora Fusion insecticide procurement rows.
-- SMC procurement is split by SP+AQ 3-11m and SP+AQ 12-59m.
-- IPTsc DHA-PPQ procurement is split by DHA-PPQ 5-11y and DHA-PPQ 12-15y.
-- Routine and campaign ITN procurement rows should match the selected net type.
-
-Blank type rows are shared add-on rows. They apply to that intervention regardless of the selected product type. Examples include supervision, logistics, training, distribution, or monitoring rows.
-
-Caveat: A blank type row should not be used as a fallback procurement price for a missing product. If a selected product has no matching typed procurement row, the tool should warn you.
-
-### Step 7: Save The Cost Set
-
-After editing unit costs, save the cost set. Then wait for `Shared data saved` before closing.
-
-If you change a cost set after generating a budget, the old budget becomes out of date. Regenerate the budget before using the outputs.
-
-## Budget Generation Walkthrough
-
-Use Budget generation to combine one scenario and one cost set. This creates the actual generated budget used in visualisations, comparisons, and exports.
-
-![Budget generation screen](screenshots/annotated/06-budget-generation.png)
-
-### Step 1: Select Scenario And Cost Set
-
-Choose the scenario and cost set from the dropdowns. The budget name will be filled automatically, but you can edit it.
-
-Use a clear name. A good name includes both the scenario and cost assumptions, for example ?NSP x COOP cost scenario v1?.
-
-### Step 2: Read Pre-generation Warnings
-
-Before generating, read any warnings shown in the red pre-generation checks box.
-
-Common warning types:
-
-- an intervention is switched on but has no matching cost rows
-- a selected product or drug type has no exact typed procurement row
-- a quantity row is costed only with shared blank-type add-ons
-- a cost row has a missing price, missing unit, unsupported unit, or invalid category
-- an intervention has zero quantity because of geography, years, or coverage settings
-
-Warnings usually do not block generation. They are there so you know where a budget may be incomplete or where assumptions need review.
-
-### Step 3: Generate Or Regenerate
-
-Click Generate now to create a budget.
-
-If a budget already exists for the selected scenario and cost set, the button may offer to regenerate or replace it. Regenerate when the scenario or cost set has changed.
-
-You can also add multiple scenario and cost set combinations to the queue and generate them together. This is useful for comparing several planning options.
-
-### Step 4: Check The Budget Library
-
-Generated budgets appear in the Budget library.
-
-![Budget library and saved budget status](screenshots/annotated/07-budget-library.png)
-
-In the library, check:
-
-- budget name
-- plan years
-- number of interventions
-- generated date
-- status
-- links to view, export Excel, edit, or delete
-
-Status meanings:
-
-- Current: the budget matches the current saved scenario and cost set.
-- Out of date: the scenario or cost set changed after the budget was generated.
-- Source deleted: the original scenario or cost set is no longer available.
+The intervention map viewer beside the table shows where interventions are running. Use it to check that the table and map tell the same story. The all-interventions map should update when you change an intervention's targeting or manual exclusions.
 
 What to check before moving on:
 
-- The budget appears in the library.
-- The status is Current.
-- The shared status in the header says `Shared data saved`.
-- Any warnings are understood and acceptable.
+- Each intervention that should be budgeted is switched on.
+- The base strata match the programme strategy.
+- Any custom additions/exclusions are intentional.
+- The final district count looks right.
+
+### Step 5: Use Manual Targeting Overrides
+
+Click `Edit targeting` for an intervention when the final district list should differ from the base stratum rule.
+
+The targeting override modal lets you:
+
+- keep a base rule, such as all districts or selected strata
+- manually include a full region
+- manually exclude a full region
+- manually include selected districts
+- manually exclude selected districts
+- clear manual changes
+
+The map uses a specific colour logic:
+
+- Light green: targeted by the base rule
+- Blue: manually added
+- Dark burgundy: manually excluded
+- Grey: not targeted
+
+![Targeting override modal](screenshots/annotated/12-targeting-override.png)
+
+District actions are deliberate. Click one or more districts on the map, choose include or exclude, and then apply the action. This reduces accidental changes because clicking the map alone does not immediately change the scenario.
+
+Use manual exclusions when a district should not receive an intervention at all. Excluded districts are removed from targeting, quantification, costing, diagnostics, maps, and exports for that intervention.
+
+This is different from partial quantity levers. For example, `deprioritise urban` for ITNs reduces quantities in eligible areas but does not mean the district is fully untargeted.
+
+### Step 6: Review Intervention Assumptions
+
+The intervention specification cards set the quantities that feed the budget. Review each intervention that is switched on.
+
+![Intervention assumptions and Mass ITN card](screenshots/annotated/03-scenario-intervention-assumptions.png)
+
+For Mass ITN campaign, check:
+
+- Net type
+- Target population
+- Coverage
+- People Per Net Cap
+- Buffer
+- Campaign timing and active years
+- Household cap option
+- Urban deprioritisation option
+
+People Per Net Cap is programme-facing language. It maps to an internal effective people-per-net value used for quantification:
+
+- Cap `2` uses effective `1.8` people per net.
+- Cap `3` uses effective `2.7` people per net.
+
+The formula is:
+
+`nets = target population x coverage / effective people per net x (1 + buffer)`
+
+If a mass campaign is set as recurring, check the campaign interval and the first campaign year. The target population shown on the Mass ITN card uses the active campaign year, not simply the final scenario year.
+
+For Routine / continuous ITN, check:
+
+- Net type
+- Routine-eligible target population
+- Coverage
+- Buffer
+- Active years
+- Whether routine nets pause after a mass campaign
+
+If routine nets pause after a mass campaign, users enter pause months. The tool converts this into a percentage reduction using the Mass ITN campaign interval:
+
+`reduction percentage = pause months / (campaign interval years x 12)`
+
+Example: if the Mass ITN campaign interval is 3 years and routine nets pause for 6 months, the reduction is `6 / 36 = 16.7%`.
+
+For IRS, check:
+
+- Insecticide selected: Actellic, SumiShield, or Fludora Fusion
+- Target population, usually households/structures
+- Coverage
+- Buffer
+- Active years
+- Any reactive/hotspot option if used
+
+IRS procurement costs are type matched. If Actellic is selected, only Actellic product rows should be used plus shared blank-type add-on rows.
+
+For SMC, check:
+
+- Drug type
+- Target age group
+- Coverage
+- Cycles
+- Buffer
+- Active years
+
+SMC procurement is split by age/pack:
+
+- `SP+AQ 3-11m`
+- `SP+AQ 12-59m`
+
+Per-child costs use covered children. Per-dose, per-pack, or per-treatment-course costs use cycle-adjusted commodity quantities.
+
+For IPT for school-age children, check:
+
+- Drug type
+- Coverage
+- Cycles / rounds
+- Buffer
+- Active years
+
+IPTsc procurement is split by school-age pack where applicable:
+
+- `DHA-PPQ 5-11y`
+- `DHA-PPQ 12-15y`
+
+If SP-AQ or SP is selected but no matching typed procurement row exists in the cost set, the tool will cost legitimate shared add-ons and warn that procurement is missing.
+
+For Malaria vaccine, check:
+
+- Vaccine product
+- Eligible infant cohort
+- Dose coverages
+- Active years
+
+Vaccine procurement rows remain product-specific. Vaccine delivery, administration, communication, support, and monitoring rows are shared add-ons unless a typed row is provided.
+
+### Step 7: Use Set By Geography
+
+Click `Set by geography...` on an intervention card when timing, product, coverage, or target assumptions differ by region or district.
+
+The modal is organised by region and district. Region rows can be used to set assumptions for all districts in that region, while district rows can be used for specific local changes.
+
+![Set-by-geography modal](screenshots/annotated/13-set-by-geography.png)
+
+Excluded districts are respected here. By default, excluded rows are hidden so users do not accidentally configure districts that are not targeted. Use the show-excluded toggle only when you need to audit or troubleshoot exclusions.
+
+What to check before moving on:
+
+- The number of targeted districts shown in the modal matches your expectation.
+- Region-level settings have cascaded as intended.
+- District-level overrides are only used where genuinely needed.
+- Excluded districts are not being unintentionally configured.
+
+### Step 8: Save The Scenario
+
+Use the summary panel on the right to save scenario changes. The save state should show whether there are unsaved changes.
+
+Before leaving the page:
+
+- Click `Save changes` if the scenario was edited.
+- Wait for the shared status to show `Shared data saved`.
+- Remember that budgets generated before the edit will become out of date and should be regenerated.
+
+## Cost Specification Walkthrough
+
+Use Cost specification to review or edit the unit cost set. A cost set is a library of line-item costs. The budget engine costs each matched line item, then aggregates those line items into summary tables and charts.
+
+![Cost specification screen showing vaccine rows and editable DQ scores](screenshots/annotated/04-cost-specification.png)
+
+### Step 1: Choose A Cost Set
+
+Click a cost set chip to open it. The default/reference cost set is currently labelled `COOP cost scenario v1`.
+
+Before major edits:
+
+- Duplicate the cost set if you want to preserve the previous version.
+- Update the notes/description so colleagues understand what changed.
+- Check that the exchange rate is correct.
+
+### Step 2: Check Cost Row Fields
+
+Each cost row includes:
+
+- Intervention
+- Cost category
+- Input description
+- Type
+- Unit
+- Unit cost in USD
+- Local currency equivalent
+- Data quality score
+- Source information
+
+The cost engine uses these rows as line items. It does not simply use one aggregate cost per intervention.
+
+### Step 3: Understand Cost Categories
+
+Cost categories are used for summaries and charts. Common categories include:
+
+- Procurement
+- Distribution / logistics
+- Operational
+- Support / capacity
+- Monitoring & evaluation
+- Communication / BCC
+- Administration
+
+If a row is assigned to the wrong category, the total budget may still be correct but category charts and tables will be misleading.
+
+### Step 4: Understand Units
+
+The unit controls which quantity is multiplied by the unit cost:
+
+- `Per net`: uses net quantity.
+- `Per structure`: uses structures sprayed.
+- `Per dose`: uses dose quantity.
+- `Per pack`: uses pack quantity.
+- `Per treatment course`: uses treatment-course quantity.
+- `Per child` and `Per person`: use coverage-adjusted target population.
+- `Per year`: applies once per intervention year.
+- `One-off`: applies once per budget.
+
+If the unit is blank or unsupported, the row may be skipped and a warning should appear during budget generation.
+
+### Step 5: Understand Type Matching
+
+Typed procurement rows must match the scenario-selected type exactly. Blank-type rows are shared add-on rows and can apply across product types.
+
+Examples:
+
+- IRS selected as Actellic uses Actellic procurement rows plus blank-type IRS add-ons.
+- IRS selected as SumiShield uses SumiShield procurement rows plus blank-type IRS add-ons.
+- SMC age-pack quantities match `SP+AQ 3-11m` and `SP+AQ 12-59m`.
+- IPTsc DHA-PPQ quantities match `DHA-PPQ 5-11y` and `DHA-PPQ 12-15y`.
+- ITN campaign and routine ITN procurement rows should match the selected net type.
+- Vaccine procurement rows should match the selected vaccine product.
+
+If a typed commodity is selected but no exact typed procurement row exists, the tool should warn. It may still cost shared add-on rows where those are legitimate.
+
+### Step 6: Edit Data Quality Scores
+
+Data quality scores appear as coloured DQ score pills. Click or tab into the pill and type:
+
+- `1`: model estimate
+- `2`: programme data
+- `3`: primary study
+- blank: not set
+
+The colour and label help users quickly identify how reliable or evidence-based a cost row is. After editing a DQ score or any other row field, the save state should show unsaved changes.
+
+### Step 7: Vaccine Delivery Rows
+
+The current cost set keeps the vaccine procurement rows unchanged and includes updated vaccine delivery/support rows. The key current vaccine row structure is:
+
+- Procurement: RTS,S dose row
+- Procurement: R21/Matrix-M dose row
+- Distribution / logistics: vaccine distribution and logistics
+- Operational: vaccine operational delivery
+- Support / capacity: vaccine support and capacity
+- Monitoring & evaluation: vaccine monitoring and evaluation
+- Communication / BCC: vaccine communication
+- Administration: vaccine administration
+
+Procurement rows are per dose. Most delivery/support rows are per child, so they scale with the covered infant cohort rather than being multiplied by every dose unless the row unit says otherwise.
+
+### Step 8: Save The Cost Set
+
+Before leaving Cost specification:
+
+- Check the summary panel for unsaved changes.
+- Click `Save changes`.
+- Wait for `Shared data saved`.
+- Regenerate budgets that use the edited cost set.
+
+## Budget Generation Walkthrough
+
+Use Budget generation to combine a scenario and a cost set.
+
+### Step 1: Select Scenario And Cost Set
+
+Choose the scenario and cost set from the dropdowns. The budget name will be suggested automatically but can be edited.
+
+If you want a clean audit trail, keep budget names descriptive. For example:
+
+- `NSP x COOP cost scenario v1`
+- `Realistic 2 x COOP cost scenario v1`
+- `Pessimistic x updated vaccine costs`
+
+### Step 2: Read Pre-generation Warnings
+
+The warning panel appears before generation when the tool detects possible costing issues.
+
+Common warnings include:
+
+- An enabled intervention has no cost rows.
+- A selected product/type has no exact typed procurement row.
+- A quantity row is only costed by shared blank-type add-ons.
+- A cost row has an unsupported unit.
+- A quantity is zero because no districts, years, or coverage are active.
+
+Warnings are not automatically blockers. They tell you what to review before relying on the result.
+
+High-priority warning example:
+
+`IPT for school-age children type SP: no matching typed procurement row`
+
+This means the tool can cost shared distribution or operational add-ons if present, but the drug procurement itself is missing from the selected cost set.
+
+### Step 3: Generate, Regenerate, Or Queue
+
+Use:
+
+- `Generate now`: create a new budget for the selected scenario and cost set.
+- `Regenerate now (replace)`: refresh an existing budget for the same scenario and cost set.
+- `Add to queue`: prepare several runs and generate them together.
+- `Regenerate all`: refresh all budgets whose source scenario and cost set still exist.
+
+Regenerate when:
+
+- a scenario changes
+- a cost set changes
+- the budget is marked out of date
+- the costing engine or quantity logic has been updated
+
+### Step 4: Check The Budget Library
+
+The Budget library lists saved budgets. Use it to open, export, edit, delete, compare, or regenerate budgets.
+
+Status labels:
+
+- `Current`: the budget matches the current saved scenario and cost set.
+- `Out of date`: the source scenario or cost set changed after the budget was generated.
+- `Source deleted`: the original scenario or cost set no longer exists.
+
+Out-of-date budgets remain viewable, but regenerate them before using outputs for decisions.
+
+Before leaving the page:
+
+- Confirm the new budget appears in the library.
+- Wait for `Shared data saved`.
+- If another user needs the budget, ask them to hard refresh and wait for `Shared data loaded`.
 
 ## Budget Visualisation Walkthrough
 
-Use Budget visualisation to explore one generated budget. This is the main place to review results, charts, maps, and detailed cost drivers.
-
-![Budget visualisation main screen](screenshots/annotated/08-visualisation-main.png)
+Use Budget visualisation to review one generated budget.
 
 ### Step 1: Select A Budget
 
-Use the Budget dropdown in the left panel to select the generated budget you want to review.
-
-If a budget is out of date, the page will show a warning. Regenerate the budget before using it for decisions.
+Choose a budget from the dropdown. If the budget is out of date, the page will show a warning. Regenerate before relying on the outputs.
 
 ### Step 2: Use Filters
 
-The filter panel lets you focus the analysis.
+Filters can narrow the output by:
 
-You can filter by:
-
-- currency: USD or GMD
-- summary level: national, region, or district
 - years
 - interventions
 - cost categories
-- regions and districts
+- geography
+- currency
+- summary level
 
-Tip: Deselecting an intervention shows the budget without that intervention. The total drops by exactly that intervention?s cost, which is useful for ?what if? discussions.
+When you filter out an intervention, totals drop by that intervention's cost. Filters are useful for analysis, but always reset filters before quoting the full budget total.
 
-### Step 3: Review The Main Totals
+### Step 3: Review Maps And Charts
 
-The visualisation page shows the total budget and cost per person for the selected filters. It can also compare the selected total against an available funding envelope.
+Maps show the geographic intervention mix and budget patterns. Charts summarise the budget by year, intervention, category, or geography.
 
-Use the funding envelope field when you want to ask: ?If this is the available budget, how much is the plan over or under??
+Use the expand icon in the bottom-right corner of a chart or map to open it at a larger size. PNG downloads are available for sharing visuals in slides or documents.
 
-### Step 4: Review Tables
+### Step 4: Review Cost Tables
 
-The cost tables show intervention costs, detailed cost lines, and quantities.
+The cost tables have multiple views:
 
-Use these tables when you want to check where a total comes from. The line detail is especially useful for validating that the correct unit costs and quantities were applied.
+- Intervention costs: grouped summaries.
+- Cost lines: line-item costs.
+- Quantities: commodity and population quantities.
 
-### Step 5: Review Charts
+Use Cost lines when you need to understand exactly why a total is high or low. The line-item table is the best audit view because it shows descriptions, units, quantities, unit costs, and line costs.
 
-![Visualisation charts](screenshots/annotated/09-visualisation-charts.png)
+### Step 5: Review Top Cost Elements
 
-Key charts include:
+The top cost elements chart is a lollipop plot based on specific cost lines, not only broad intervention categories.
 
-- intervention cost share
-- yearly cost by intervention
-- cost class breakdown
-- cost class proportions
-- top cost elements
+Use the top-N selector in the chart card to choose how many elements to display. The tooltip/details should show the cost description, intervention, category, unit cost, and quantity information where available.
 
-Use the expand icon in the bottom-right corner of chart cards to view charts at a larger size. Use PNG links to download chart images.
+### Step 6: Export Excel
 
-### Step 6: Review Top Cost Elements
-
-![Top cost elements lollipop plot](screenshots/annotated/10-top-cost-elements.png)
-
-The top cost elements plot shows the largest line-item cost drivers. This is more specific than an intervention total because it shows the actual cost description, such as a commodity, per diem, or cold-chain line.
-
-Use the dropdown in the chart card to choose how many elements to show.
-
-When reviewing this plot, ask:
-
-- Are the largest cost elements expected?
-- Are the descriptions clear enough to explain to others?
-- Do the unit costs and quantities make sense in the Excel Cost detail sheet?
-- Is a large cost driven by procurement, delivery, operations, support, or monitoring?
-
-### Step 7: Export Excel
-
-Use Export to Excel when you want a full workbook for checking, sharing, or archiving.
-
-The Excel export is the best way to audit line-by-line calculations outside the app.
+Use the Excel export when you need to audit, share, or archive the budget. The export includes line-item detail, quantities, diagnostics, status information, assumptions, and summary sheets.
 
 ## Budget Comparison Walkthrough
 
-Use Budget comparison to compare two or more generated budgets.
-
-![Budget comparison screen](screenshots/annotated/11-budget-comparison.png)
+Use Budget comparison to compare generated budgets.
 
 ### Step 1: Select Budgets
 
-Choose a baseline budget, then select one or more comparison budgets.
+Select a baseline budget and one or more comparison budgets. Choose budgets generated from the scenarios you intend to compare.
 
-The baseline is the reference point. Differences are shown relative to it.
+Before interpreting differences, check:
 
-### Step 2: Interpret Differences
+- Each selected budget is current.
+- The scenario and cost set names are clear.
+- The same currency and filter settings are being used.
 
-Use the comparison outputs to understand:
+### Step 2: Review Cost Change
 
-- which budget is larger or smaller
-- how much the total changes
-- which interventions or categories drive the difference
-- how the yearly profile changes
-- whether a budget fits within an available funding envelope
+The comparison page includes a tabbed table card. The cost view shows cost change versus baseline by intervention.
 
-### Step 3: Check Stale Budget Warnings
+For each intervention, review:
 
-If either the baseline or comparison budget is out of date, regenerate it before relying on the comparison.
+- baseline cost
+- comparison cost
+- absolute change
+- percentage change
 
-Comparison is only meaningful when the selected budgets were generated from the intended scenarios and cost sets.
+Use the table filters such as `has increases`, `has decreases`, and `all` to focus on the direction of change.
+
+### Step 3: Review Commodity Change
+
+The commodity view shows change in intervention commodity requirements versus baseline. It is organised to mirror the cost-change table so rows are easier to compare.
+
+Use this view when a budget change needs to be explained by quantity changes, for example:
+
+- fewer ITNs because of a different people-per-net cap
+- fewer districts targeted by IRS or SMC
+- fewer vaccine doses because fewer years or districts are active
+- lower routine net quantities because routine distribution pauses after a mass campaign
+
+Rows should be ordered consistently by intervention name across the cost and commodity views.
+
+### Step 4: Check Stale Budget Warnings
+
+If either the baseline or comparison budget is out of date, regenerate before relying on the comparison. A stale comparison can be misleading because it may compare old scenario logic to new scenario logic.
 
 ## Excel Export Guide
 
-Excel exports are designed for checking and sharing results outside the app. They should be treated as audit workbooks, not just summary tables.
+The Excel export is the strongest audit output. It is designed so programme staff can trace from high-level totals down to the line-item calculations.
 
-Useful sheets include:
+Key sheets to use:
 
-- Summary sheets: high-level totals by year, intervention, category, or geography.
-- Quantities: target populations, coverage-adjusted populations, commodity quantities, and quantity basis.
-- Cost detail: line-by-line cost calculations.
-- Diagnostics: warnings and notes saved with the budget.
-- Source status: whether the budget is current, out of date, or linked to deleted sources.
-- Assumptions snapshot: scenario settings used to generate the budget.
-- Cost set audit: which cost rows were used, matched, unused, unsupported, or skipped.
-- Top cost elements: the same line-item aggregation used in the lollipop plot.
+- Summary / totals sheets: quick review of budget totals.
+- Cost detail: line-item costs, including intervention, type, description, unit, quantity used for costing, unit cost, source, and match metadata.
+- Quantities: target populations, covered populations, commodity quantities, age bands, and quantity basis.
+- Diagnostics: warnings and notes captured during budget generation.
+- Source status: whether the scenario/cost set behind the budget is current or out of date.
+- Assumptions snapshot: scenario inputs at the time of generation.
+- Cost set audit: cost rows and whether they were used, matched, unused, unsupported, or missing required data.
+- Top cost elements: the same line-item aggregation used by the lollipop plot.
 
 ### How To Cross-check A Budget In Excel
 
-Start with the Cost detail sheet.
+1. Open `Cost detail`.
+2. Sum the `cost_usd` column.
+3. Compare that sum to the budget total.
+4. Group `Cost detail` by intervention and compare to intervention summary sheets.
+5. Group `Cost detail` by cost category and compare to category summaries.
+6. Open `Quantities` to check whether quantities look plausible.
+7. Open `Diagnostics` to see whether anything was missing, skipped, or only partially costed.
 
-For each line, check:
-
-1. Intervention and type.
-2. Cost description and source.
-3. Unit.
-4. Quantity used for cost.
-5. Unit cost.
-6. Line cost.
-7. Cost category.
-
-The basic calculation is:
-
-`line cost = quantity used for cost x unit cost`
-
-Then check that the sum of line costs matches the summary totals. If totals do not reconcile, use the Diagnostics and Cost set audit sheets to look for missing, skipped, or unsupported rows.
+If totals do not reconcile, use the line-item sheets first. They are the source of truth for the generated budget.
 
 ## Practical Interpretation Tips
 
-When using the tool in a meeting or review:
+Use budget totals together with quantities. A cost difference can come from:
 
-- Start with the scenario description so everyone knows what is being costed.
-- Check warning messages before discussing totals.
-- Use the intervention share chart to explain broad cost drivers.
-- Use the top cost elements plot to explain specific line-item drivers.
-- Use the funding envelope field to show whether a plan is affordable under a given available budget.
-- Export Excel when someone needs to check the exact calculation.
+- different target districts
+- different coverage
+- different years
+- different product types
+- different unit costs
+- different unit handling, such as per child versus per dose
+- routine-net pause assumptions
+- ITN cap assumptions
+- manual inclusions or exclusions
 
-When editing assumptions:
+When explaining differences, try to say both what changed and why it changed. For example:
 
-- Change one major assumption at a time when possible.
-- Duplicate scenarios or cost sets before major edits.
-- Regenerate budgets after changing scenarios or costs.
-- Compare the old and new budgets to understand what changed.
+`Realistic 2 is lower than NSP mainly because the Mass ITN campaign applies a household/net cap and uses fewer ITNs, which reduces procurement, distribution, and operational line items linked to net quantities.`
 
 ## Troubleshooting
 
 ### You Cannot Sign In
 
-Check that your username is your email address and that the temporary password was entered exactly.
+Check:
 
-If you already reset your password, use your new password.
+- You are using the correct app link.
+- Your username is your email address.
+- You have accepted or reset the temporary password.
+- The password was typed exactly.
 
-Contact Hayley if you are still blocked.
+If the login page accepts the password but returns you to the app without loading data, refresh once and wait for the shared status.
 
 ### You Do Not See A Budget Someone Else Generated
 
-Refresh the app and wait for `Shared data loaded`.
+Try this sequence:
 
-If the budget still does not appear, ask the person who generated it to confirm that their browser showed `Shared data saved`.
+1. Hard refresh the browser.
+2. Wait for `Shared data loaded`.
+3. Open Budget generation and check the Budget library.
+4. If still missing, ask the person who generated it whether their browser showed `Shared data saved`.
 
-Do not click `Sync now` from an empty browser unless asked during troubleshooting.
+Do not click `Sync now` from a browser with no local budgets unless you are specifically troubleshooting with support.
 
 ### A Budget Is Out Of Date
 
-This means the source scenario or cost set changed after the budget was generated.
-
-Go to Budget generation and regenerate the budget.
+This means the scenario or cost set changed after the budget was generated. Go to Budget generation and regenerate the budget before using it for decisions.
 
 ### You See Pre-generation Warnings
 
-Read the warning text before using the budget.
+Warnings are prompts to check the setup. Read the intervention/type named in the warning.
 
-Common warnings include:
+Common responses:
 
-- an intervention is switched on but has no matching cost rows
-- a selected product or drug type does not have an exact matching procurement cost
-- an intervention is costed only with shared add-on costs
-- a cost row has a missing price or unsupported unit
-
-Warnings help identify where assumptions or unit costs may need review.
+- Missing typed procurement: add or correct the matching cost row, or accept that procurement is not costed.
+- Shared add-ons only: check whether this is intentional.
+- Zero quantity: check district targeting, active years, coverage, and cycles.
+- Unsupported unit: edit the cost row unit to a supported value.
 
 ### Shared Saving Shows An Error
 
-Do not keep making changes in multiple browsers.
-
-Take a screenshot of the message and contact Hayley.
+Do not close the browser immediately if important work was just created. Wait a few moments and try a refresh only if you are confident local changes are visible. If the error remains, ask for support and mention the exact message in the top-right corner.
 
 ### You Are Unsure Whether To Click Sync Now
 
-Do not click it unless asked during troubleshooting, or unless you know the current browser has the budget library that should be preserved.
+Most users should not need `Sync now`. Use it only when you know this browser has the correct budget library that should be preserved in shared storage.
 
 ### A Chart Or Table Does Not Look Right
 
-Check whether filters are active. A chart may look different because only some years, interventions, cost categories, regions, or districts are selected.
+Check:
 
-Use Reset filters to return to the full budget view.
+- Are filters active?
+- Is the selected budget current?
+- Is the expected intervention switched on?
+- Are the expected districts targeted?
+- Are manual exclusions applied?
+- Does the cost set contain matching typed procurement rows?
 
 ### A Budget Total Looks Too Low
 
-Check:
+Possible explanations:
 
-- whether all expected interventions are selected in the visualisation filters
-- whether the scenario includes all expected geographies
-- whether coverage is zero or very low for an intervention
-- whether a pre-generation warning says procurement costs are missing
-- whether the cost set has matching typed rows for the selected commodity or product
+- An intervention is switched off.
+- Districts or regions are excluded.
+- Coverage is low or active years are missing.
+- The selected product/type has no matching procurement cost.
+- A cost row has an unsupported unit.
+- Routine nets are reduced after a mass campaign.
+- An ITN cap or deprioritisation lever is reducing net quantities.
 
 ### A Budget Total Looks Too High
 
-Check:
+Possible explanations:
 
-- whether cycles, rounds, doses, or contacts are higher than expected
-- whether a per-child or per-person cost was accidentally entered as a per-dose or per-pack cost
-- whether a fixed yearly cost is being applied in every active year
-- whether duplicate cost rows exist in the cost set
+- Too many districts are targeted.
+- Coverage is set too high.
+- The intervention is active in too many years.
+- Per-dose or per-cycle costs are being applied to cycle-adjusted quantities.
+- A one-off or per-year row is included unintentionally.
+- A cost row is duplicated.
 
 ## Final Checklist Before Sharing Outputs
 
-Before sharing charts, tables, or Excel exports, check:
+Before sending charts, tables, or Excel files to colleagues:
 
-- The budget status is Current.
-- The selected scenario and cost set are correct.
-- Pre-generation warnings have been reviewed.
-- The filter settings match the question being answered.
-- The currency is correct.
-- The Excel export has been generated after the latest budget regeneration.
-- The header showed `Shared data saved` before closing the app.
+- Confirm the budget status is current.
+- Reset filters unless you are intentionally sharing a filtered view.
+- Check pre-generation diagnostics.
+- Open Cost detail if a major total looks surprising.
+- Confirm scenario assumptions, especially targeting, active years, coverage, ITN cap, and routine pause.
+- Confirm cost set assumptions, especially product/type matching, unit costs, units, and DQ scores.
+- Export Excel for any budget that will be reviewed outside the app.
+
