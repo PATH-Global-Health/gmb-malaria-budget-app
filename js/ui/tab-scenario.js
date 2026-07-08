@@ -731,10 +731,12 @@ GMB.tabs = GMB.tabs || {};
       return el("span", { class: "chip removable" }, [k.split("|")[1], el("span", { class: "x", text: " x", onClick: function () { iv.scope.exclude = ex.filter(function (x) { return x !== k; }); refresh(); } })]);
     }))]));
 
-    var lastYear = Math.max.apply(null, current.years), covered = resolvedTargetKeys(iv, assignment), targ = 0;
-    Object.keys(covered).forEach(function (k) { if (isActive(iv, k, lastYear)) { var pr = k.split("|"); targ += ivTargetPop(iv, pr[0], pr[1], lastYear); } });
-    var pctNat = nationalPop(lastYear) ? Math.round(targ / nationalPop(lastYear) * 1000) / 10 : 0;
-    card.appendChild(el("div", { class: "spec-foot small" }, [el("span", {}, ["Target pop " + lastYear + ": ", el("strong", { text: num(targ) })]), el("span", { class: "muted" }, [pctNat + "% of national"])]));
+    var displayYears = (iv.activeYears || []).filter(function (y) { return current.years.indexOf(y) !== -1; }).sort(function (a, b) { return a - b; });
+    var displayYear = displayYears.length ? displayYears[displayYears.length - 1] : Math.max.apply(null, current.years);
+    var covered = resolvedTargetKeys(iv, assignment), targ = 0;
+    Object.keys(covered).forEach(function (k) { if (isActive(iv, k, displayYear)) { var pr = k.split("|"); targ += ivTargetPop(iv, pr[0], pr[1], displayYear); } });
+    var pctNat = nationalPop(displayYear) ? Math.round(targ / nationalPop(displayYear) * 1000) / 10 : 0;
+    card.appendChild(el("div", { class: "spec-foot small" }, [el("span", {}, ["Target pop " + displayYear + ": ", el("strong", { text: num(targ) })]), el("span", { class: "muted" }, [pctNat + "% of national"])]));
     return card;
   }
 
