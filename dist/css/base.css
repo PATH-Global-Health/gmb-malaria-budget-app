@@ -319,6 +319,7 @@ body {
 .scn-step { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .8rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 
 .field { margin: 12px 0; }
+.field.compact-field { margin-top: -4px; }
 .field > label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 5px; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }

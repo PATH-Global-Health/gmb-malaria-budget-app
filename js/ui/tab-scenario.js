@@ -291,14 +291,14 @@ GMB.tabs = GMB.tabs || {};
     });
     var scnChips = el("div", { class: "chip-row" }, scns.map(function (s) {
       return chip(s.name, s.id === current.id, function () { guardUnsaved(function () { loadScenario(s.id); }); }, s.description || s.name);
-    }).concat([
-      chip("Duplicate", false, function () { guardUnsaved(function () { duplicateScenario(); }); }),
-      chip("+ New", false, function () { guardUnsaved(function () { newScenario(); }); })
-    ]));
+    }));
     var actions = el("div", { class: "actions-row" }, [
+      el("button", { class: "btn secondary", onClick: function () { guardUnsaved(function () { duplicateScenario(); }); } }, ["Duplicate selected"]),
+      el("button", { class: "btn secondary", onClick: function () { guardUnsaved(function () { newScenario(); }); } }, ["New scenario"]),
       el("button", { class: "linkbtn", onClick: exportScenarioXlsx }, ["Export to Excel"])
     ]);
-    p.appendChild(el("div", { class: "field" }, [el("label", { text: "Scenario" }), scnChips, actions]));
+    p.appendChild(el("div", { class: "field" }, [el("label", { text: "Scenario library" }), scnChips]));
+    p.appendChild(el("div", { class: "field compact-field" }, [el("label", { text: "Actions" }), actions]));
     p.appendChild(el("div", { class: "field" }, [el("label", { text: "Scenario name" }), name]));
     var notes = document.createElement("textarea"); notes.value = current.description || ""; notes.rows = 2;
     notes.placeholder = "Optional - a longer description of this scenario";
