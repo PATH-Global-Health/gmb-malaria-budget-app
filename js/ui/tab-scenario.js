@@ -1112,10 +1112,10 @@ GMB.tabs = GMB.tabs || {};
   // The five SNT scenarios are seeded as real, budget-able scenarios.
   // Seed any that are MISSING (by template marker) so a partial/leftover store still gets the full set.
   function seedSnt() {
-    var have = {}, removed = G.store.get().removedSeeds || [];
+    var have = {};
     G.store.get().scenarios.forEach(function (s) { var seed = seedTemplateId(s); if (seed) have[seed] = true; });
     ["nsp", "bau", "optimistic", "realistic", "pessimistic"].forEach(function (id) {
-      if (have[id] || removed.indexOf("scn:" + id) !== -1) return;
+      if (have[id]) return;
       var scn = buildScenario(id); scn.id = "scn_seed_" + id; scn.seed = id; remapTemplateStrata(scn); G.store.addScenario(scn);
     });
     // backfill on pre-existing seeded scenarios: descriptions + updated SMC default coverage (now 100%)
@@ -1145,10 +1145,9 @@ GMB.tabs = GMB.tabs || {};
         el("button", { class: "btn danger", onClick: function () { modal.close(); doDelete(); } }, ["Delete"])] });
   }
   function doDelete() {
-    var id = current.id, seed = seedTemplateId(current);
+    var id = current.id;
     if (G.store.get().scenarios.some(function (s) { return s.id === id; })) {
       G.store.removeScenario(id);
-      if (seed && G.templates[seed]) G.store.addRemovedSeed("scn:" + seed);
     }
     loadFirstScenario(); flash = ""; refresh();
   }

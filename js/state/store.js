@@ -197,7 +197,9 @@ window.GMB = window.GMB || {};
     data = data || {};
     var budgets = mergeById(arr(data.budgets).map(clone));
     var scenarioIds = {}, costSetIds = {};
-    var scenarios = dedupeSeeded(arr(data.scenarios).map(clone), scenarioSeedKey, scenarioEditScore, refCounts(budgets, "scenarioId"), scenarioIds);
+    var scenarios = dedupeSeeded(arr(data.scenarios).map(clone).filter(function (s) {
+      return s && s.id !== "test-scenario" && !/test scenario from lambda/i.test(s.name || "");
+    }), scenarioSeedKey, scenarioEditScore, refCounts(budgets, "scenarioId"), scenarioIds);
     var costSets = dedupeSeeded(arr(data.costSets).map(clone), costSeedKey, costEditScore, refCounts(budgets, "costSetId"), costSetIds);
     return {
       scenarios: scenarios,

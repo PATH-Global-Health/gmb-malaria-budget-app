@@ -93,7 +93,7 @@ GMB.tabs = GMB.tabs || {};
   }
   function seedCostSets() {
     var ref = G.store.get().costSets.filter(function (c) { return c.seed === "gfpmi"; })[0];
-    if (!ref) { if ((G.store.get().removedSeeds || []).indexOf("cost:gfpmi") === -1) G.store.addCostSet(buildDefaultCostSet()); return; }
+    if (!ref) { G.store.addCostSet(buildDefaultCostSet()); return; }
     // corrective refresh of the canonical reference if it predates a library fix
     var changed = false;
     if (ref.name === "GF / PMI 2025 reference") { ref.name = "COOP cost scenario v1"; changed = true; }
@@ -125,8 +125,8 @@ GMB.tabs = GMB.tabs || {};
         el("button", { class: "btn danger", onClick: function () { modal.close(); doDelete(); } }, ["Delete"])] });
   }
   function doDelete() {
-    var id = current.id, seed = current.seed;
-    if (G.store.get().costSets.some(function (c) { return c.id === id; })) { G.store.removeCostSet(id); if (seed) G.store.addRemovedSeed("cost:" + seed); }
+    var id = current.id;
+    if (G.store.get().costSets.some(function (c) { return c.id === id; })) G.store.removeCostSet(id);
     loadFirstCostSet(); flash = ""; refresh();
   }
   function safeFile(s) { return String(s || "costset").replace(/[^\w.-]+/g, "_").slice(0, 60); }
