@@ -113,6 +113,14 @@ GMB.tabs = GMB.tabs || {};
     return scn;
   }
 
+  function seedTemplateId(s) {
+    if (!s) return "";
+    if (s.seed && G.templates && G.templates[s.seed]) return s.seed;
+    if (!s.seed && s.template && G.templates && G.templates[s.template] &&
+      !/^Copy of\s+/i.test(s.name || "")) return s.template;
+    return "";
+  }
+
   function remapTemplateStrata(scn) {
     var pos = { I: 0, II: 1, III: 2 }, bands = scn.strata.bands;
     Object.keys(scn.interventions).forEach(function (code) {
@@ -1105,16 +1113,18 @@ GMB.tabs = GMB.tabs || {};
   // Seed any that are MISSING (by template marker) so a partial/leftover store still gets the full set.
   function seedSnt() {
     var have = {}, removed = G.store.get().removedSeeds || [];
-    G.store.get().scenarios.forEach(function (s) { if (s.template) have[s.template] = true; });
+    G.store.get().scenarios.forEach(function (s) { var seed = seedTemplateId(s); if (seed) have[seed] = true; });
     ["nsp", "bau", "optimistic", "realistic", "pessimistic"].forEach(function (id) {
       if (have[id] || removed.indexOf("scn:" + id) !== -1) return;
-      var scn = buildScenario(id); remapTemplateStrata(scn); G.store.addScenario(scn);
+      var scn = buildScenario(id); scn.id = "scn_seed_" + id; scn.seed = id; remapTemplateStrata(scn); G.store.addScenario(scn);
     });
     // backfill on pre-existing seeded scenarios: descriptions + updated SMC default coverage (now 100%)
     G.store.get().scenarios.forEach(function (s) {
-      if (!s.template || !G.templates[s.template]) return;
+      var seed = seedTemplateId(s);
+      if (!seed || !G.templates[seed]) return;
       var changed = false;
-      if (!s.description) { s.description = G.templates[s.template].description || ""; changed = true; }
+      if (s.seed !== seed) { s.seed = seed; changed = true; }
+      if (!s.description) { s.description = G.templates[seed].description || ""; changed = true; }
       var smc = s.interventions && s.interventions.smc;
       if (smc && smc.params && smc.params.coverage === 0.75) { smc.params.coverage = 1.0; changed = true; }
       if (changed) G.store.updateScenario(s);
@@ -1125,9 +1135,9 @@ GMB.tabs = GMB.tabs || {};
     if (f) { current = clone(f); lastSavedJson = snap(); flash = ""; refresh(); }
   }
   function newScenario() { current = buildScenario("blank"); lastSavedJson = null; flash = ""; refresh(); }
-  function duplicateScenario() { current = clone(current); current.id = uid("scn"); current.name = "Copy of " + current.name; lastSavedJson = null; flash = ""; refresh(); }
+  function duplicateScenario() { current = clone(current); current.id = uid("scn"); current.name = "Copy of " + current.name; delete current.seed; delete current.template; lastSavedJson = null; flash = ""; refresh(); }
   function growthArg() { return current.assumptions.growthByYear ? current.assumptions.growthByYear : current.assumptions.growth; }
-  function loadFirstScenario() { var all = G.store.get().scenarios; var f = all.filter(function (s) { return s.template === "nsp"; })[0] || all[0]; if (f) { current = clone(f); lastSavedJson = snap(); } else { current = buildScenario("blank"); lastSavedJson = null; } }
+  function loadFirstScenario() { var all = G.store.get().scenarios; var f = all.filter(function (s) { return seedTemplateId(s) === "nsp"; })[0] || all.filter(function (s) { return s.template === "nsp"; })[0] || all[0]; if (f) { current = clone(f); lastSavedJson = snap(); } else { current = buildScenario("blank"); lastSavedJson = null; } }
   function deleteScenario() {
     var modal = G.ui.openModal({ title: "Delete scenario",
       body: el("div", {}, [el("p", { class: "small", text: 'Delete "' + current.name + '"? This cannot be undone.' })]),
@@ -1135,10 +1145,10 @@ GMB.tabs = GMB.tabs || {};
         el("button", { class: "btn danger", onClick: function () { modal.close(); doDelete(); } }, ["Delete"])] });
   }
   function doDelete() {
-    var id = current.id, tpl = current.template;
+    var id = current.id, seed = seedTemplateId(current);
     if (G.store.get().scenarios.some(function (s) { return s.id === id; })) {
       G.store.removeScenario(id);
-      if (tpl && G.templates[tpl]) G.store.addRemovedSeed("scn:" + tpl);
+      if (seed && G.templates[seed]) G.store.addRemovedSeed("scn:" + seed);
     }
     loadFirstScenario(); flash = ""; refresh();
   }

@@ -84,7 +84,7 @@ GMB.tabs = GMB.tabs || {};
   // ---------- cost-set model ----------
   function buildDefaultCostSet() {
     return {
-      id: uid("cost"), name: "COOP cost scenario v1", seed: "gfpmi",
+      id: "cost_seed_gfpmi", name: "COOP cost scenario v1", seed: "gfpmi",
       description: "Default unit costs from the COOP Malaria Unit Cost Tool, with Gambia vaccine introduction delivery costs from v4.6 and current RTS,S/R21 procurement rows retained.",
       currency: (G.data && G.data.defaultCurrency) || "GMD",
       exchange_rate: (G.data && G.data.defaultExchangeRate) || 72.39,

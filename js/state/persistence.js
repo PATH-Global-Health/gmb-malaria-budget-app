@@ -11,16 +11,16 @@ window.GMB = window.GMB || {};
   var SCHEMA = 2;
   var lastStatus = { state: "idle", message: "" };
 
+  function clean(data) {
+    return G.normalizeState ? G.normalizeState(data) : (data || {});
+  }
+
   function payloadFrom(state) {
+    var data = clean(state);
     return {
       schemaVersion: SCHEMA,
       savedAt: new Date().toISOString(),
-      data: {
-        scenarios: state.scenarios,
-        costSets: state.costSets,
-        budgets: state.budgets,
-        removedSeeds: state.removedSeeds
-      }
+      data: data
     };
   }
 
@@ -87,24 +87,24 @@ window.GMB = window.GMB || {};
   }
 
   function mergeState(localData, remoteData) {
-    if (!localData) return remoteData;
-    if (!remoteData) return localData;
-    return {
+    if (!localData) return clean(remoteData);
+    if (!remoteData) return clean(localData);
+    return clean({
       scenarios: mergeById(remoteData.scenarios, localData.scenarios),
       costSets: mergeById(remoteData.costSets, localData.costSets),
       budgets: mergeById(remoteData.budgets, localData.budgets),
       removedSeeds: Array.from(new Set([].concat(remoteData.removedSeeds || [], localData.removedSeeds || [])))
-    };
+    });
   }
 
   var persistence = {
     load: function () {
       return idbGet().then(function (payload) {
-        var localData = payload && payload.data ? payload.data : null;
+        var localData = payload && payload.data ? clean(payload.data) : null;
         var legacy = localLoad();
         if (!localData && legacy) {
-          localData = legacy;
-          idbSet({ schemaVersion: SCHEMA, savedAt: new Date().toISOString(), data: legacy }).catch(function () {});
+          localData = clean(legacy);
+          idbSet({ schemaVersion: SCHEMA, savedAt: new Date().toISOString(), data: localData }).catch(function () {});
         }
         if (G.cloud && G.cloud.loadState) {
           return G.cloud.loadState().then(function (remoteData) {
