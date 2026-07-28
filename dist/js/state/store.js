@@ -193,19 +193,45 @@ window.GMB = window.GMB || {};
     }));
   }
 
+  function deletedIdsFrom(data) {
+    var d = (data && data.deletedIds) || {};
+    return {
+      scenarios: Array.from(new Set(arr(d.scenarios))),
+      costSets: Array.from(new Set(arr(d.costSets))),
+      budgets: Array.from(new Set(arr(d.budgets)))
+    };
+  }
+
+  function deleteMap(ids) {
+    var out = {};
+    arr(ids).forEach(function (id) { if (id) out[id] = true; });
+    return out;
+  }
+
+  function stripDeleted(items, ids) {
+    var deleted = deleteMap(ids);
+    return arr(items).filter(function (item) { return item && item.id && !deleted[item.id]; });
+  }
+
+  function removeFromArr(items, id) {
+    return arr(items).filter(function (x) { return x !== id; });
+  }
+
   function normalizeStateData(data) {
     data = data || {};
-    var budgets = mergeById(arr(data.budgets).map(clone));
+    var deletedIds = deletedIdsFrom(data);
+    var budgets = mergeById(stripDeleted(arr(data.budgets).map(clone), deletedIds.budgets));
     var scenarioIds = {}, costSetIds = {};
-    var scenarios = dedupeSeeded(arr(data.scenarios).map(clone).filter(function (s) {
+    var scenarios = dedupeSeeded(stripDeleted(arr(data.scenarios).map(clone).filter(function (s) {
       return s && s.id !== "test-scenario" && !/test scenario from lambda/i.test(s.name || "");
-    }), scenarioSeedKey, scenarioEditScore, refCounts(budgets, "scenarioId"), scenarioIds);
-    var costSets = dedupeSeeded(arr(data.costSets).map(clone), costSeedKey, costEditScore, refCounts(budgets, "costSetId"), costSetIds);
+    }), deletedIds.scenarios), scenarioSeedKey, scenarioEditScore, refCounts(budgets, "scenarioId"), scenarioIds);
+    var costSets = dedupeSeeded(stripDeleted(arr(data.costSets).map(clone), deletedIds.costSets), costSeedKey, costEditScore, refCounts(budgets, "costSetId"), costSetIds);
     return {
       scenarios: scenarios,
       costSets: costSets,
       budgets: remapBudgets(budgets, scenarioIds, costSetIds),
-      removedSeeds: Array.from(new Set(arr(data.removedSeeds)))
+      removedSeeds: Array.from(new Set(arr(data.removedSeeds))),
+      deletedIds: deletedIds
     };
   }
 
@@ -213,7 +239,8 @@ window.GMB = window.GMB || {};
     scenarios: [],   // [{id, name, ...}]
     costSets: [],    // [{id, name, rows:[...]}]
     budgets: [],     // [{id, scenarioId, costSetId, ...}]
-    removedSeeds: [], // markers like "scn:nsp" / "cost:gfpmi" the user deleted (don't re-seed)
+    removedSeeds: [], // legacy seed-deletion markers retained for old saved data
+    deletedIds: { scenarios: [], costSets: [], budgets: [] },
     activeTab: "overview"
   };
 
@@ -237,6 +264,7 @@ window.GMB = window.GMB || {};
       state.costSets = data.costSets;
       state.budgets = data.budgets;
       state.removedSeeds = data.removedSeeds;
+      state.deletedIds = data.deletedIds;
       notify();
     },
 
@@ -248,34 +276,50 @@ window.GMB = window.GMB || {};
     setActiveTab: function (id) { state.activeTab = id; notify(); },
 
     // --- scenarios ---
-    addScenario: function (s) { state.scenarios.push(s); G.persistence.save(state); notify(); },
+    addScenario: function (s) { state.deletedIds.scenarios = removeFromArr(state.deletedIds.scenarios, s && s.id); state.scenarios.push(s); G.persistence.save(state); notify(); },
     updateScenario: function (s) {
+      state.deletedIds.scenarios = removeFromArr(state.deletedIds.scenarios, s && s.id);
       state.scenarios = state.scenarios.map(function (x) { return x.id === s.id ? s : x; });
       G.persistence.save(state); notify();
     },
     removeScenario: function (id) {
+      if (state.deletedIds.scenarios.indexOf(id) === -1) state.deletedIds.scenarios.push(id);
+      state.scenarios.forEach(function (s) {
+        if (s.id !== id) return;
+        var seed = scenarioSeedKey(s);
+        if (seed && state.removedSeeds.indexOf("scn:" + seed) === -1) state.removedSeeds.push("scn:" + seed);
+      });
       state.scenarios = state.scenarios.filter(function (x) { return x.id !== id; });
       G.persistence.save(state); notify();
     },
 
     // --- cost sets ---
-    addCostSet: function (c) { state.costSets.push(c); G.persistence.save(state); notify(); },
+    addCostSet: function (c) { state.deletedIds.costSets = removeFromArr(state.deletedIds.costSets, c && c.id); state.costSets.push(c); G.persistence.save(state); notify(); },
     updateCostSet: function (c) {
+      state.deletedIds.costSets = removeFromArr(state.deletedIds.costSets, c && c.id);
       state.costSets = state.costSets.map(function (x) { return x.id === c.id ? c : x; });
       G.persistence.save(state); notify();
     },
     removeCostSet: function (id) {
+      if (state.deletedIds.costSets.indexOf(id) === -1) state.deletedIds.costSets.push(id);
+      state.costSets.forEach(function (c) {
+        if (c.id !== id) return;
+        var seed = costSeedKey(c);
+        if (seed && state.removedSeeds.indexOf("cost:" + seed) === -1) state.removedSeeds.push("cost:" + seed);
+      });
       state.costSets = state.costSets.filter(function (x) { return x.id !== id; });
       G.persistence.save(state); notify();
     },
 
     // --- budgets ---
-    addBudget: function (b) { state.budgets.push(b); G.persistence.save(state); notify(); },
+    addBudget: function (b) { state.deletedIds.budgets = removeFromArr(state.deletedIds.budgets, b && b.id); state.budgets.push(b); G.persistence.save(state); notify(); },
     updateBudget: function (b) {
+      state.deletedIds.budgets = removeFromArr(state.deletedIds.budgets, b && b.id);
       state.budgets = state.budgets.map(function (x) { return x.id === b.id ? b : x; });
       G.persistence.save(state); notify();
     },
     removeBudget: function (id) {
+      if (state.deletedIds.budgets.indexOf(id) === -1) state.deletedIds.budgets.push(id);
       state.budgets = state.budgets.filter(function (x) { return x.id !== id; });
       G.persistence.save(state); notify();
     }

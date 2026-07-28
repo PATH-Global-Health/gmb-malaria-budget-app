@@ -168,15 +168,23 @@ window.GMB = window.GMB || {};
     var costSets = Array.isArray(data.costSets) ? data.costSets : [];
     var budgets = Array.isArray(data.budgets) ? data.budgets : [];
     var removedSeeds = Array.isArray(data.removedSeeds) ? data.removedSeeds : [];
+    var deleted = data.deletedIds || {};
+    var deletedIds = {
+      scenarios: Array.isArray(deleted.scenarios) ? deleted.scenarios : [],
+      costSets: Array.isArray(deleted.costSets) ? deleted.costSets : [],
+      budgets: Array.isArray(deleted.budgets) ? deleted.budgets : []
+    };
     if (scenarios.length === 1 && scenarios[0].id === "test-scenario" &&
-      !costSets.length && !budgets.length && !removedSeeds.length) {
+      !costSets.length && !budgets.length && !removedSeeds.length &&
+      !deletedIds.scenarios.length && !deletedIds.costSets.length && !deletedIds.budgets.length) {
       scenarios = [];
     }
     return {
       scenarios: scenarios,
       costSets: costSets,
       budgets: budgets,
-      removedSeeds: removedSeeds
+      removedSeeds: removedSeeds,
+      deletedIds: deletedIds
     };
   }
 
@@ -215,7 +223,8 @@ window.GMB = window.GMB || {};
           schemaVersion: b.schemaVersion || ""
         };
       }),
-      removedSeeds: clean.removedSeeds
+      removedSeeds: clean.removedSeeds,
+      deletedIds: clean.deletedIds
     };
   }
 
@@ -263,7 +272,8 @@ window.GMB = window.GMB || {};
           scenarios: data.scenarios,
           costSets: data.costSets,
           budgets: loaded,
-          removedSeeds: data.removedSeeds
+          removedSeeds: data.removedSeeds,
+          deletedIds: data.deletedIds
         });
         lastRemoteBudgetCount = state.budgets.length;
         lastRemoteWasEmpty = !!(data.remote && data.remote.empty);
@@ -287,7 +297,8 @@ window.GMB = window.GMB || {};
   async function saveState(state) {
     if (!CFG.enabled || !(await validTokens())) return null;
     var clean = normalizedState(state);
-    if (!clean.budgets.length && !lastRemoteWasEmpty && (!lastRemoteLoaded || lastRemoteBudgetCount > 0)) {
+    var hasBudgetDeletes = clean.deletedIds && clean.deletedIds.budgets && clean.deletedIds.budgets.length;
+    if (!clean.budgets.length && !hasBudgetDeletes && !lastRemoteWasEmpty && (!lastRemoteLoaded || lastRemoteBudgetCount > 0)) {
       setStatus("error", "Shared save skipped: this browser has 0 local budgets", { user: userLabel(loadTokens()) });
       return null;
     }

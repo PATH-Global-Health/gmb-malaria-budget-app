@@ -72,8 +72,11 @@ window.GMB = window.GMB || {};
 
   function isEmpty(data) {
     data = data || {};
+    var deleted = data.deletedIds || {};
     return !(data.scenarios || []).length && !(data.costSets || []).length &&
-      !(data.budgets || []).length && !(data.removedSeeds || []).length;
+      !(data.budgets || []).length && !(data.removedSeeds || []).length &&
+      !(deleted.scenarios || []).length && !(deleted.costSets || []).length &&
+      !(deleted.budgets || []).length;
   }
 
   function mergeById(a, b) {
@@ -89,11 +92,18 @@ window.GMB = window.GMB || {};
   function mergeState(localData, remoteData) {
     if (!localData) return clean(remoteData);
     if (!remoteData) return clean(localData);
+    var localDeleted = localData.deletedIds || {};
+    var remoteDeleted = remoteData.deletedIds || {};
     return clean({
       scenarios: mergeById(remoteData.scenarios, localData.scenarios),
       costSets: mergeById(remoteData.costSets, localData.costSets),
       budgets: mergeById(remoteData.budgets, localData.budgets),
-      removedSeeds: Array.from(new Set([].concat(remoteData.removedSeeds || [], localData.removedSeeds || [])))
+      removedSeeds: Array.from(new Set([].concat(remoteData.removedSeeds || [], localData.removedSeeds || []))),
+      deletedIds: {
+        scenarios: Array.from(new Set([].concat(remoteDeleted.scenarios || [], localDeleted.scenarios || []))),
+        costSets: Array.from(new Set([].concat(remoteDeleted.costSets || [], localDeleted.costSets || []))),
+        budgets: Array.from(new Set([].concat(remoteDeleted.budgets || [], localDeleted.budgets || [])))
+      }
     });
   }
 

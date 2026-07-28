@@ -82,32 +82,14 @@ GMB.tabs = GMB.tabs || {};
   }
 
   // ---------- cost-set model ----------
-  function buildDefaultCostSet() {
+  function buildEmptyCostSet() {
     return {
-      id: "cost_seed_gfpmi", name: "COOP cost scenario v1", seed: "gfpmi",
-      description: "Default unit costs from the COOP Malaria Unit Cost Tool, with Gambia vaccine introduction delivery costs from v4.6 and current RTS,S/R21 procurement rows retained.",
+      id: uid("cost"), name: "New cost set",
+      description: "",
       currency: (G.data && G.data.defaultCurrency) || "GMD",
       exchange_rate: (G.data && G.data.defaultExchangeRate) || 72.39,
-      rows: clone((G.data && G.data.defaultCosts) || []), schemaVersion: 1
+      rows: [], schemaVersion: 1
     };
-  }
-  function seedCostSets() {
-    var ref = G.store.get().costSets.filter(function (c) { return c.seed === "gfpmi"; })[0];
-    if (!ref) { G.store.addCostSet(buildDefaultCostSet()); return; }
-    // corrective refresh of the canonical reference if it predates a library fix
-    var changed = false;
-    if (ref.name === "GF / PMI 2025 reference") { ref.name = "COOP cost scenario v1"; changed = true; }
-    if (!ref.description || /Unit Cost Tool v3\.3/.test(ref.description)) { ref.description = "Default unit costs from the COOP Malaria Unit Cost Tool, with Gambia vaccine introduction delivery costs from v4.6 and current RTS,S/R21 procurement rows retained."; changed = true; }
-    if (ref.rows.some(function (r) { return r.intervention_code === "vax" && /diluent|syringes|safety boxes|cold-chain|last-mile vaccine transport/i.test(r.description || ""); })
-      || !ref.rows.some(function (r) { return r.intervention_code === "vax" && r.description === "Vaccine operational delivery (introduction)"; })) {
-      var defVaxAddons = clone((G.data && G.data.defaultCosts) || []).filter(function (r) { return r.intervention_code === "vax" && !(r.cost_class === "PROC" && r.type); });
-      ref.rows = ref.rows.filter(function (r) { return r.intervention_code !== "vax" || (r.cost_class === "PROC" && r.type); }).concat(defVaxAddons);
-      changed = true;
-    }
-    if (ref.rows.some(function (r) { return r.intervention_code === "irs" && /SumiShield|Fludora/.test(r.description || "") && !r.type; })
-      || ref.rows.some(function (r) { return r.intervention_code === "smc" && r.cost_class === "PROC" && r.type === "SP-AQ"; })
-      || ref.rows.some(function (r) { return r.intervention_code === "iptsc" && r.cost_class === "PROC" && r.type === "DHA-PPQ"; })) { ref.rows = clone((G.data && G.data.defaultCosts) || []); changed = true; }
-    if (changed) G.store.updateCostSet(ref);
   }
   function loadCostSet(id) {
     var f = G.store.get().costSets.filter(function (c) { return c.id === id; })[0];
@@ -117,7 +99,7 @@ GMB.tabs = GMB.tabs || {};
     current = clone(current); current.id = uid("cost"); current.name = "Copy of " + current.name; delete current.seed;
     lastSavedJson = null; flash = ""; refresh();
   }
-  function loadFirstCostSet() { var all = G.store.get().costSets; if (all.length) { current = clone(all[0]); lastSavedJson = snap(); } else { current = buildDefaultCostSet(); lastSavedJson = null; } }
+  function loadFirstCostSet() { var all = G.store.get().costSets; if (all.length) { current = clone(all[0]); lastSavedJson = snap(); } else { current = buildEmptyCostSet(); lastSavedJson = null; } }
   function deleteCostSet() {
     var modal = G.ui.openModal({ title: "Delete cost set",
       body: el("div", {}, [el("p", { class: "small", text: "Delete “" + current.name + "”? This cannot be undone." })]),
@@ -162,7 +144,7 @@ GMB.tabs = GMB.tabs || {};
   }
   function revertCurrent() {
     if (lastSavedJson) current = JSON.parse(lastSavedJson);
-    else current = buildDefaultCostSet();
+    else current = buildEmptyCostSet();
     flash = "";
   }
   function resetPrices() {
@@ -188,8 +170,6 @@ GMB.tabs = GMB.tabs || {};
       ]
     });
   }
-  G.seedCostSets = seedCostSets;
-
   // group a cost set's rows: { code: { cat: [rows] } }, preserving catalog order
   function grouped(cs) {
     var byCode = {};
@@ -337,10 +317,9 @@ GMB.tabs = GMB.tabs || {};
       rootEl = root;
       if (!rootEl._gmbCostDirty) { rootEl._gmbCostDirty = true; rootEl.addEventListener("change", updateSaveState); rootEl.addEventListener("input", updateSaveState); }
       if (!current) {
-        if (!G.store.get().costSets.length) seedCostSets();
         var first = G.store.get().costSets[0];
         if (first) { current = clone(first); lastSavedJson = snap(); }
-        else { current = buildDefaultCostSet(); lastSavedJson = null; }
+        else { current = buildEmptyCostSet(); lastSavedJson = null; }
       }
       G.router.setLeaveGuard(function (proceed) { guardUnsaved(proceed); });
       flash = ""; renderBody();

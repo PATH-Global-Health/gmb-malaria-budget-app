@@ -1109,27 +1109,6 @@ GMB.tabs = GMB.tabs || {};
     lastSavedJson = snap(); flash = 'Saved "' + current.name + '"'; refresh();
   }
 
-  // The five SNT scenarios are seeded as real, budget-able scenarios.
-  // Seed any that are MISSING (by template marker) so a partial/leftover store still gets the full set.
-  function seedSnt() {
-    var have = {};
-    G.store.get().scenarios.forEach(function (s) { var seed = seedTemplateId(s); if (seed) have[seed] = true; });
-    ["nsp", "bau", "optimistic", "realistic", "pessimistic"].forEach(function (id) {
-      if (have[id]) return;
-      var scn = buildScenario(id); scn.id = "scn_seed_" + id; scn.seed = id; remapTemplateStrata(scn); G.store.addScenario(scn);
-    });
-    // backfill on pre-existing seeded scenarios: descriptions + updated SMC default coverage (now 100%)
-    G.store.get().scenarios.forEach(function (s) {
-      var seed = seedTemplateId(s);
-      if (!seed || !G.templates[seed]) return;
-      var changed = false;
-      if (s.seed !== seed) { s.seed = seed; changed = true; }
-      if (!s.description) { s.description = G.templates[seed].description || ""; changed = true; }
-      var smc = s.interventions && s.interventions.smc;
-      if (smc && smc.params && smc.params.coverage === 0.75) { smc.params.coverage = 1.0; changed = true; }
-      if (changed) G.store.updateScenario(s);
-    });
-  }
   function loadScenario(id) {
     var f = G.store.get().scenarios.filter(function (s) { return s.id === id; })[0];
     if (f) { current = clone(f); lastSavedJson = snap(); flash = ""; refresh(); }
@@ -1195,18 +1174,15 @@ GMB.tabs = GMB.tabs || {};
       ]
     });
   }
-  G.seedScenarios = seedSnt;
-
   G.tabs.scenario = {
     render: function (root) {
       rootEl = root;
       if (!rootEl._gmbDirtyListener) { rootEl._gmbDirtyListener = true; rootEl.addEventListener("change", updateSaveState); rootEl.addEventListener("input", updateSaveState); }
       if (!current) {
-        if (!G.store.get().scenarios.length) seedSnt();
         var all = G.store.get().scenarios;
         var first = all.filter(function (s) { return s.template === "nsp"; })[0] || all[0];
         if (first) { current = clone(first); lastSavedJson = snap(); }
-        else { current = buildScenario("nsp"); remapTemplateStrata(current); lastSavedJson = null; }
+        else { current = buildScenario("blank"); lastSavedJson = null; }
       }
       if (!mapApi) mapApi = G.ui.gambiaMap({ onClick: onDistrictClick });
       G.router.setLeaveGuard(function (proceed) { guardUnsaved(proceed); });

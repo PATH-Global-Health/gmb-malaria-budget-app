@@ -88,10 +88,6 @@
     // Restore any saved scenarios/costs/budgets
     if (saved) G.store.hydrate(saved);
 
-    // First run: seed the five SNT scenarios and the default cost set
-    if (G.seedScenarios) G.seedScenarios();
-    if (G.seedCostSets) G.seedCostSets();
-
     // Footer: confirm reference data loaded
     var status = document.getElementById("data-status");
     if (status) {
