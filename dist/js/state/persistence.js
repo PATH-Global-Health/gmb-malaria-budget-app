@@ -118,25 +118,19 @@ window.GMB = window.GMB || {};
         }
         if (G.cloud && G.cloud.loadState) {
           return G.cloud.loadState().then(function (remoteData) {
+            if (G.cloud.config && G.cloud.config.enabled) {
+              var remoteClean = clean(remoteData || {});
+              idbSet(payloadFrom(remoteClean)).catch(function () {});
+              return remoteClean;
+            }
             if (remoteData && !isEmpty(remoteData)) {
               var merged = mergeState(localData, remoteData);
               idbSet(payloadFrom(merged)).catch(function () {});
-              if (localData && (localData.budgets || []).length > (remoteData.budgets || []).length && G.cloud.saveState) {
-                G.cloud.saveState(merged).catch(function (e) { console.warn("Could not restore local budgets to shared storage:", e); });
-              }
               return merged;
-            }
-            if (localData && !isEmpty(localData) && G.cloud.saveState) {
-              G.cloud.saveState(localData).catch(function (e) { console.warn("Could not migrate local data to shared storage:", e); });
             }
             return localData || remoteData || null;
           }).catch(function (e) {
             console.warn("Could not load shared data; using browser storage:", e);
-            if (localData && !isEmpty(localData) && G.cloud.saveState) {
-              G.cloud.saveState(localData).catch(function (se) {
-                console.warn("Could not repair shared data from browser storage:", se);
-              });
-            }
             return localData;
           });
         }
